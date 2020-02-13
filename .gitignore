@@ -1,0 +1,17 @@
+# Created by .ignore support plugin (hsz.mobi)
+### Scala template
+*.class
+*.log
+
+.idea/
+
+# Project exclude paths
+/app/target/
+/app/target/scala-2.13/classes/
+/app/target/scala-2.13/test-classes/
+/macros/target/
+/macros/target/scala-2.13/classes/
+/macros/target/scala-2.13/test-classes/
+/project/project/target/
+/project/target/
+/target/
