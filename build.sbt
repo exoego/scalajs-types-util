@@ -10,7 +10,7 @@ lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
 
 lazy val root = project
   .in(file("."))
-  .aggregate(macros, app)
+  .aggregate(macros)
 
 lazy val macros = project
   .in(file("macros"))
@@ -21,13 +21,4 @@ lazy val macros = project
       "org.scalatest" %%% "scalatest" % "3.1.0" % Test
     )
   )
-  .enablePlugins(ScalaJSPlugin)
-
-lazy val app = project
-  .in(file("app"))
-  .settings(
-    metaMacroSettings,
-    scalaJSUseMainModuleInitializer := true
-  )
-  .dependsOn(macros)
   .enablePlugins(ScalaJSPlugin)

@@ -6,9 +6,6 @@
 .idea/
 
 # Project exclude paths
-/app/target/
-/app/target/scala-2.13/classes/
-/app/target/scala-2.13/test-classes/
 /macros/target/
 /macros/target/scala-2.13/classes/
 /macros/target/scala-2.13/test-classes/
