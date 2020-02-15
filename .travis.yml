@@ -13,7 +13,7 @@ env:
 matrix:
   include:
     - scala: 2.13.1
-      jdk: openjdk18
+      jdk: openjdk8
       env: SCALAJS_VERSION=1.0.0 JOB_NAME="format and doc"
       script: sbt ++$TRAVIS_SCALA_VERSION scalafmtCheckAll scalafmtSbtCheck
 
