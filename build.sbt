@@ -2,6 +2,11 @@ name := "scalajs-util-types"
 
 version := "0.1"
 
+lazy val compilerSettings: Seq[Def.Setting[_]] = Seq(
+  scalacOptions ++= Seq("-deprecation"),
+  scalacOptions ++= Seq("-P:scalajs:sjsDefinedByDefault").filter(_ => scalaJSVersion.startsWith("0.6."))
+)
+
 lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
   Compile / scalacOptions ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
@@ -24,6 +29,7 @@ lazy val root = project
 lazy val macros = project
   .in(file("macros"))
   .settings(
+    compilerSettings,
     metaMacroSettings,
     libraryDependencies ++= Seq(
       "org.scalameta" %%% "scalameta" % "4.3.0",
