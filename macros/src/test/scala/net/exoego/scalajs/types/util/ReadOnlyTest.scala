@@ -21,10 +21,14 @@ class ReadOnlyTest extends AnyFlatSpec with Matchers {
 
   it should "compile when applied to a trait with type argument" in {
     """ @ReadOnly[Foo] trait Y {}""".stripMargin should compile
+    """ @ReadOnly[Bar] trait Y {}""".stripMargin should compile
   }
 
   it should "have own property as-is" in {
     """ val a: ReadOnlyFoo = ???
+      | val b: Boolean = a.own
+      | """.stripMargin should compile
+    """ val a: ReadOnlyBar = ???
       | val b: Boolean = a.own
       | """.stripMargin should compile
   }
@@ -33,14 +37,23 @@ class ReadOnlyTest extends AnyFlatSpec with Matchers {
     """ val a: ReadOnlyFoo = ???
       | val b: String = a.name
       | """.stripMargin should compile
-
     """ val a: ReadOnlyFoo = ???
+      | a.name = ""
+      | """.stripMargin shouldNot compile
+
+    """ val a: ReadOnlyBar = ???
+      | val b: String = a.name
+      | """.stripMargin should compile
+    """ val a: ReadOnlyBar = ???
       | a.name = ""
       | """.stripMargin shouldNot compile
   }
 
   it should "have inherited method" in {
     """ val a: ReadOnlyFoo = ???
+      | val b: Int = a.bar("buz")
+      | """.stripMargin should compile
+    """ val a: ReadOnlyBar = ???
       | val b: Int = a.bar("buz")
       | """.stripMargin should compile
   }
@@ -51,4 +64,11 @@ class ReadOnlyTest extends AnyFlatSpec with Matchers {
 trait ReadOnlyFoo extends js.Object {
   var own: Boolean        = js.native
   def buz(x: String): Int = js.native
+}
+
+@ReadOnly[Bar]
+@js.native
+trait ReadOnlyBar extends js.Object {
+  var own: Boolean
+  def buz(x: String): Int
 }
