@@ -21,10 +21,14 @@ class PartialTest extends AnyFlatSpec with Matchers {
 
   it should "compile when applied to a trait with type argument" in {
     """ @Partial[Foo] trait Y {}""".stripMargin should compile
+    """ @Partial[Bar] trait Y {}""".stripMargin should compile
   }
 
   it should "have own property as-is" in {
     """ val a: PartialFoo = ???
+      | val b: Boolean = a.own
+      | """.stripMargin should compile
+    """ val a: PartialBar = ???
       | val b: Boolean = a.own
       | """.stripMargin should compile
   }
@@ -34,10 +38,28 @@ class PartialTest extends AnyFlatSpec with Matchers {
       | val b: js.UndefOr[String] = a.name
       | val c: js.UndefOr[js.Array[Int]] = a.x
       | """.stripMargin should compile
+    """ val a: PartialBar = ???
+      | val b: js.UndefOr[String] = a.name
+      | val c: js.UndefOr[js.Array[Int]] = a.x
+      | """.stripMargin should compile
+  }
+
+  it should "allow reassign to var" in {
+    """ val a: PartialFoo = ???
+      | a.name = js.undefined
+      | a.name = "yay"
+      | """.stripMargin should compile
+    """ val a: PartialBar = ???
+      | a.name = js.undefined
+      | a.name = "yay"
+      | """.stripMargin should compile
   }
 
   it should "have inherited method" in {
     """ val a: PartialFoo = ???
+      | val b: Int = a.bar("buz")
+      | """.stripMargin should compile
+    """ val a: PartialBar = ???
       | val b: Int = a.bar("buz")
       | """.stripMargin should compile
   }
@@ -48,4 +70,11 @@ class PartialTest extends AnyFlatSpec with Matchers {
 trait PartialFoo extends js.Object {
   var own: Boolean        = js.native
   def buz(x: String): Int = js.native
+}
+
+@Partial[Bar]
+@js.native
+trait PartialBar extends js.Object {
+  var own: Boolean
+  def buz(x: String): Int
 }
