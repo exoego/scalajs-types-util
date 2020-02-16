@@ -62,15 +62,14 @@ object Partial {
           q"val $name: js.UndefOr[$tpt]"
         }
       } else if (stringRep.startsWith("variable ")) {
-        val m = s.asMethod
-        val paramss = m.paramLists.map(_.map(param => {
-          internal.valDef(param)
-        }))
+        val m       = s.asMethod
         val retType = m.returnType
-        if (isJsNative) {
-          q"def $name (...$paramss): js.UndefOr[$retType] = scala.scalajs.js.native"
+        if (retType == c.typeOf[Unit]) {
+          EmptyTree
+        } else if (isJsNative) {
+          q"var $name: js.UndefOr[$retType] = scala.scalajs.js.native"
         } else {
-          q"def $name (): js.UndefOr[$retType]"
+          q"var $name: js.UndefOr[$retType]"
         }
       } else {
         val m = s.asMethod
@@ -81,7 +80,7 @@ object Partial {
         if (isJsNative) {
           q"def $name (...$paramss): $retType = scala.scalajs.js.native"
         } else {
-          q"def $name (): $retType"
+          q"def $name (...$paramss): $retType"
         }
       }
     }
