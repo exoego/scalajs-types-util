@@ -47,11 +47,11 @@ class PartialTest extends AnyFlatSpec with Matchers {
   it should "allow reassign to var" in {
     """ val a: PartialFoo = ???
       | a.name = js.undefined
-      | a.x = js.undefined
+      | a.name = "yay"
       | """.stripMargin should compile
     """ val a: PartialBar = ???
       | a.name = js.undefined
-      | a.x = js.undefined
+      | a.name = "yay"
       | """.stripMargin should compile
   }
 
