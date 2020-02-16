@@ -43,13 +43,6 @@ class PartialTest extends AnyFlatSpec with Matchers {
   }
 }
 
-@js.native
-trait Foo extends js.Object {
-  var name: String        = js.native
-  val x: js.Array[Int]    = js.native
-  def bar(x: String): Int = js.native
-}
-
 @Partial[Foo]
 @js.native
 trait PartialFoo extends js.Object {
