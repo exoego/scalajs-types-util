@@ -14,3 +14,16 @@ trait Bar extends js.Object {
   val x: js.Array[Int]
   def bar(x: String): Int
 }
+
+@js.native
+trait OptionalFoo extends js.Object {
+  var a: js.UndefOr[Int]    = js.native
+  val b: js.UndefOr[String] = js.native
+  var c: Boolean            = js.native
+}
+
+trait OptionalBar extends js.Object {
+  var a: js.UndefOr[Int]
+  val b: js.UndefOr[String]
+  var c: Boolean
+}
