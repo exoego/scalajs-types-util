@@ -33,7 +33,7 @@ lazy val macros = project
     metaMacroSettings,
     libraryDependencies ++= Seq(
       "org.scalameta" %%% "scalameta" % "4.3.8",
-      "org.scalatest" %%% "scalatest" % "3.1.0" % Test
+      "org.scalatest" %%% "scalatest" % "3.1.1" % Test
     )
   )
   .enablePlugins(ScalaJSPlugin)
