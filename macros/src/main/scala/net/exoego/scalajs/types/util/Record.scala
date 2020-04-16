@@ -60,12 +60,8 @@ object Record {
           q"$mods trait $tpname[..$tparams] extends { ..$earlydefns } with ..$parents { $self => ..$ownMembers }"
           ) =>
         val isJsNative = isScalaJsNative(c)(mods)
-        
-        val inheritedMembers =
-          (argumentType.members.toSet -- c.typeOf[js.Object].members.toSet).toList
-            .filterNot(_.isConstructor)
-            .map(_.name.decodedName.toString)
-            .toSet
+
+        val inheritedMembers    = getInheritedMembers(c)(argumentType).map(_.name.decodedName.toString).toSet
         val duplicateProperties = specifiedFieldNames intersect inheritedMembers
         if (duplicateProperties.nonEmpty) {
           bail(s"""Duplicate keys: ${duplicateProperties.mkString(", ")}""")

@@ -2,6 +2,7 @@ package net.exoego.scalajs.types.util
 
 import scala.reflect.internal.Trees
 import scala.reflect.macros.blackbox
+import scala.scalajs.js
 
 private[util] object Helper {
   def bail(message: String)(implicit c: blackbox.Context): Nothing = {
@@ -14,6 +15,14 @@ private[util] object Helper {
     if (!inputs.headOption.exists(_.isInstanceOf[ClassDef])) {
       bail("Can annotate only trait")(c)
     }
+  }
+
+  def getInheritedMembers(c: blackbox.Context)(argumentType: c.universe.Type): List[c.universe.Symbol] = {
+    import c.universe._
+    // maybe decls instead of members?
+    (argumentType.members.toSet -- c.typeOf[js.Object].members.toSet).toList
+      .filterNot(_.isConstructor)
+      .sortBy(_.name.decodedName.toString)
   }
 
   def getArgumentType[T]()(implicit c: blackbox.Context): T = {
@@ -37,10 +46,10 @@ private[util] object Helper {
     import c.universe._
     mods.annotations.exists {
       case q"new scala.scalajs.js.native()" => true
-      case q"new scalajs.js.native()" => true
-      case q"new js.native()" => true
-      case _ => false
+      case q"new scalajs.js.native()"       => true
+      case q"new js.native()"               => true
+      case _                                => false
     }
   }
-  
+
 }

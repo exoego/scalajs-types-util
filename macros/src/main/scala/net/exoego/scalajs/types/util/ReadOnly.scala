@@ -100,13 +100,9 @@ object ReadOnly {
       case List(
           q"$mods trait $tpname[..$tparams] extends { ..$earlydefns } with ..$parents { $self => ..$ownMembers }"
           ) =>
-        val isJsNative = isScalaJsNative(c)(mods)
-        val inheritedMembers =
-          // maybe decls instead of members?
-          (argumentType.members.toSet -- c.typeOf[js.Object].members.toSet).toList
-            .filterNot(_.isConstructor)
-            .sortBy(_.name.decodedName.toString)
-        val partialMembers = inheritedMembers.map(s => toPartial(s, isJsNative))
+        val isJsNative       = isScalaJsNative(c)(mods)
+        val inheritedMembers = getInheritedMembers(c)(argumentType)
+        val partialMembers   = inheritedMembers.map(s => toPartial(s, isJsNative))
         c.Expr[Any](q"""
           $mods trait $tpname[..$tparams] extends { ..$earlydefns } with ..$parents { $self => 
             ..$ownMembers
