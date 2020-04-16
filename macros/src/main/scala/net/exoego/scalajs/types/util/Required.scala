@@ -52,8 +52,8 @@ class Required[T <: js.Object] extends StaticAnnotation {
 object Required {
   def impl(c: blackbox.Context)(annottees: c.Expr[Any]*) = {
     import c.universe._
-
-    def bail(message: String) = c.abort(c.enclosingPosition, "Can annotate only trait")
+    import Helper._
+    implicit val context = c
 
     val jsUndefOrSymbol = c.symbolOf[UndefOr[_]]
     def unwrap(retType: c.universe.Type): c.universe.Type = {

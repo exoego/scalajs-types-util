@@ -45,8 +45,8 @@ class Record[T <: js.Object](keys: String*) extends StaticAnnotation {
 object Record {
   def impl(c: blackbox.Context)(annottees: c.Expr[Any]*) = {
     import c.universe._
-
-    def bail(message: String) = c.abort(c.enclosingPosition, message)
+    import Helper._
+    implicit val context = c
 
     val specifiedFieldNames: Set[String] = c.prefix.tree match {
       case q"new Record[$a](..$b)" => b.map(_.toString.drop(1).dropRight(1)).toSet

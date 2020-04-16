@@ -52,8 +52,9 @@ class ReadOnly[T <: js.Object] extends StaticAnnotation {
 object ReadOnly {
   def impl(c: blackbox.Context)(annottees: c.Expr[Any]*) = {
     import c.universe._
+    import Helper._
+    implicit val context = c
 
-    def bail(message: String) = c.abort(c.enclosingPosition, "Can annotate only trait")
     def toPartial(s: Symbol, isJsNative: Boolean): Tree = {
       val name      = TermName(s.name.decodedName.toString)
       val stringRep = s.toString
