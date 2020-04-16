@@ -1,5 +1,6 @@
 package net.exoego.scalajs.types.util
 
+import scala.reflect.internal.Trees
 import scala.reflect.macros.blackbox
 
 private[util] object Helper {
@@ -32,4 +33,14 @@ private[util] object Helper {
     argumentType.asInstanceOf[T]
   }
 
+  def isScalaJsNative(c: blackbox.Context)(mods: c.universe.Modifiers): Boolean = {
+    import c.universe._
+    mods.annotations.exists {
+      case q"new scala.scalajs.js.native()" => true
+      case q"new scalajs.js.native()" => true
+      case q"new js.native()" => true
+      case _ => false
+    }
+  }
+  
 }

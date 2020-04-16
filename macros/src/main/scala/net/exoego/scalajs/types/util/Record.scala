@@ -59,13 +59,8 @@ object Record {
       case List(
           q"$mods trait $tpname[..$tparams] extends { ..$earlydefns } with ..$parents { $self => ..$ownMembers }"
           ) =>
-        val isJsNative = mods.annotations.exists {
-          case q"new scala.scalajs.js.native()" => true
-          case q"new scalajs.js.native()"       => true
-          case q"new js.native()"               => true
-          case _                                => false
-        }
-
+        val isJsNative = isScalaJsNative(c)(mods)
+        
         val inheritedMembers =
           (argumentType.members.toSet -- c.typeOf[js.Object].members.toSet).toList
             .filterNot(_.isConstructor)
