@@ -69,20 +69,14 @@ object Required {
       val stringRep = s.toString
       if (stringRep.startsWith("value ")) {
         val tpt = unwrap(s.typeSignature)
-        if (isJsNative) {
-          q"val $name: $tpt = scala.scalajs.js.native"
-        } else {
-          q"val $name: $tpt"
-        }
+        nativeIfNeeded(c)(q"val $name: $tpt", isJsNative)
       } else if (stringRep.startsWith("variable ")) {
         val m       = s.asMethod
         val retType = unwrap(m.returnType)
         if (retType == c.typeOf[Unit]) {
           EmptyTree
-        } else if (isJsNative) {
-          q"var $name: $retType = scala.scalajs.js.native"
         } else {
-          q"var $name: $retType"
+          nativeIfNeeded(c)(q"var $name: $retType", isJsNative)
         }
       } else {
         val m = s.asMethod
@@ -90,11 +84,7 @@ object Required {
           internal.valDef(param)
         }))
         val retType = unwrap(m.returnType)
-        if (isJsNative) {
-          q"def $name (...$paramss): $retType = scala.scalajs.js.native"
-        } else {
-          q"def $name (...$paramss): $retType"
-        }
+        nativeIfNeeded(c)(q"def $name (...$paramss): $retType", isJsNative)
       }
     }
 

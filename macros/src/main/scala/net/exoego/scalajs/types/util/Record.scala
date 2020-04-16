@@ -69,11 +69,7 @@ object Record {
 
         val addedProperties = specifiedFieldNames.map { s =>
           val name = TermName(s)
-          if (isJsNative) {
-            q"var $name: $argumentType = scala.scalajs.js.native"
-          } else {
-            q"var $name: $argumentType"
-          }
+          nativeIfNeeded(c)(q"var $name: $argumentType", isJsNative)
         }.toList
 
         c.Expr[Any](q"""

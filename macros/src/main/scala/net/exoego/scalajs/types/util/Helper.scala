@@ -52,4 +52,17 @@ private[util] object Helper {
     }
   }
 
+  def nativeIfNeeded(c: blackbox.Context)(tree: c.universe.Tree, isJsNative: Boolean): c.universe.Tree = {
+    import c.universe._
+    if (isJsNative) {
+      tree match {
+        case q"var $name: ${tpt}"                => q"var $name: $tpt = scala.scalajs.js.native"
+        case q"val $name: ${tpt}"                => q"val $name: $tpt = scala.scalajs.js.native"
+        case q"def $name(...$paramss): $retType" => q"def $name(...$paramss): $retType = scala.scalajs.js.native"
+        case _                                   => tree
+      }
+    } else {
+      tree
+    }
+  }
 }

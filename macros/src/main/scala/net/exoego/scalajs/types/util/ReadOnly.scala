@@ -60,11 +60,7 @@ object ReadOnly {
       val stringRep = s.toString
       if (stringRep.startsWith("value ")) {
         val tpt = s.typeSignature
-        if (isJsNative) {
-          q"def $name: $tpt = scala.scalajs.js.native"
-        } else {
-          q"def $name: $tpt"
-        }
+        nativeIfNeeded(c)(q"def $name: $tpt", isJsNative)
       } else if (stringRep.startsWith("variable ")) {
         val m = s.asMethod
         val paramss = m.paramLists.map(_.map(param => {
@@ -74,10 +70,8 @@ object ReadOnly {
         if (retType == c.typeOf[Unit]) {
           // Omit update method for var
           EmptyTree
-        } else if (isJsNative) {
-          q"def $name: $retType = scala.scalajs.js.native"
         } else {
-          q"def $name: $retType"
+          nativeIfNeeded(c)(q"def $name: $retType", isJsNative)
         }
       } else {
         val m = s.asMethod
@@ -85,11 +79,7 @@ object ReadOnly {
           internal.valDef(param)
         }))
         val retType = m.returnType
-        if (isJsNative) {
-          q"def $name (...$paramss): $retType = scala.scalajs.js.native"
-        } else {
-          q"def $name (...$paramss): $retType"
-        }
+        nativeIfNeeded(c)(q"def $name (...$paramss): $retType", isJsNative)
       }
     }
 

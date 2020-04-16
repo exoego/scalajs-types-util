@@ -67,29 +67,17 @@ object Pick {
         if (stringRep.startsWith("variable ")) {
           val m       = s.asMethod
           val retType = m.returnType
-          if (isJsNative) {
-            q"var $name: $retType = scala.scalajs.js.native"
-          } else {
-            q"var $name: $retType"
-          }
+          nativeIfNeeded(c)(q"var $name: $retType", isJsNative)
         } else if (stringRep.startsWith("value ")) {
           val tpt = s.typeSignature
-          if (isJsNative) {
-            q"val $name: $tpt = scala.scalajs.js.native"
-          } else {
-            q"val $name: $tpt"
-          }
+          nativeIfNeeded(c)(q"val $name: $tpt", isJsNative)
         } else {
           val m = s.asMethod
           val paramss = m.paramLists.map(_.map(param => {
             internal.valDef(param)
           }))
           val retType = m.returnType
-          if (isJsNative) {
-            q"def $name (...$paramss): $retType = scala.scalajs.js.native"
-          } else {
-            q"def $name (...$paramss): $retType"
-          }
+          nativeIfNeeded(c)(q"def $name (...$paramss): $retType", isJsNative)
         }
       }
     }
