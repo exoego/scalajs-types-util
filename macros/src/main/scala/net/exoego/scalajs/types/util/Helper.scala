@@ -7,6 +7,14 @@ private[util] object Helper {
     c.abort(c.enclosingPosition, message)
   }
 
+  def annotteeShouldBeTrait(c: blackbox.Context)(annottees: Seq[c.Expr[Any]]): Unit = {
+    import c.universe._
+    val inputs = annottees.map(_.tree).toList
+    if (!inputs.headOption.exists(_.isInstanceOf[ClassDef])) {
+      bail("Can annotate only trait")(c)
+    }
+  }
+
   def getArgumentType[T]()(implicit c: blackbox.Context): T = {
     import c.universe._
     val argumentType: c.universe.Type = {

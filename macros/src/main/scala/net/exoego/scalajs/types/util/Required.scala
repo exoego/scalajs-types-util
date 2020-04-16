@@ -99,11 +99,7 @@ object Required {
     }
 
     val argumentType = getArgumentType[Type]()
-
-    val inputs = annottees.map(_.tree).toList
-    if (!inputs.headOption.exists(_.isInstanceOf[ClassDef])) {
-      bail("Can annotate only trait")
-    }
+    annotteeShouldBeTrait(c)(annottees)
 
     annottees.map(_.tree) match {
       case List(

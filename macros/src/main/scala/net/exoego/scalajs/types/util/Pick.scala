@@ -55,11 +55,8 @@ object Pick {
       case _                     => bail("""@Pick requires a type argument T and at-least one field names to be picked from T.""")
     }
     val argumentType = getArgumentType[Type]()
+    annotteeShouldBeTrait(c)(annottees)
 
-    val inputs = annottees.map(_.tree).toList
-    if (!inputs.headOption.exists(_.isInstanceOf[ClassDef])) {
-      bail("Can annotate only trait")
-    }
     def toPick(s: Symbol, isJsNative: Boolean): Tree = {
       val decodedName = s.name.decodedName.toString
       val name        = TermName(decodedName)
