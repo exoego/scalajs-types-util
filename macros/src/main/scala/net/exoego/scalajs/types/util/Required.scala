@@ -98,16 +98,7 @@ object Required {
       }
     }
 
-    val argumentType: Type = {
-      val macroTypeWithArguments          = c.typecheck(q"${c.prefix.tree}").tpe
-      val annotationClass: ClassSymbol    = macroTypeWithArguments.typeSymbol.asClass
-      val annotationTypePlaceholder: Type = annotationClass.typeParams.head.asType.toType
-      annotationTypePlaceholder.asSeenFrom(macroTypeWithArguments, annotationClass)
-    }
-
-    if (argumentType.finalResultType == c.typeOf[Nothing]) {
-      bail("Type parameter T must be provided")
-    }
+    val argumentType = getArgumentType[Type]()
 
     val inputs = annottees.map(_.tree).toList
     if (!inputs.headOption.exists(_.isInstanceOf[ClassDef])) {

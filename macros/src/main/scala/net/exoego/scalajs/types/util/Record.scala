@@ -52,17 +52,8 @@ object Record {
       case q"new Record[$a](..$b)" => b.map(_.toString.drop(1).dropRight(1)).toSet
       case _                       => bail("""@Record requires a type argument T and at-least one field names to be picked from T.""")
     }
-    val argumentType: Type = {
-      val macroTypeWithArguments          = c.typecheck(q"${c.prefix.tree}").tpe
-      val annotationClass: ClassSymbol    = macroTypeWithArguments.typeSymbol.asClass
-      val annotationTypePlaceholder: Type = annotationClass.typeParams.head.asType.toType
-      annotationTypePlaceholder.asSeenFrom(macroTypeWithArguments, annotationClass)
-    }
-    if (argumentType.finalResultType == c.typeOf[Nothing]) {
-      bail("Type parameter T must be provided")
-    }
-
-    val inputs = annottees.map(_.tree).toList
+    val argumentType = getArgumentType[Type]()
+    val inputs       = annottees.map(_.tree).toList
     if (!inputs.headOption.exists(_.isInstanceOf[ClassDef])) {
       bail("Can annotate only trait")
     }
