@@ -47,27 +47,16 @@ class Pick[T <: js.Object](keys: String*) extends StaticAnnotation {
 object Pick {
   def impl(c: blackbox.Context)(annottees: c.Expr[Any]*) = {
     import c.universe._
-
-    def bail(message: String) = c.abort(c.enclosingPosition, message)
+    import Helper._
+    implicit val context = c
 
     val specifiedFieldNames: Set[String] = c.prefix.tree match {
       case q"new Pick[$a](..$b)" => b.map(_.toString.drop(1).dropRight(1)).toSet
       case _                     => bail("""@Pick requires a type argument T and at-least one field names to be picked from T.""")
     }
-    val argumentType: Type = {
-      val macroTypeWithArguments          = c.typecheck(q"${c.prefix.tree}").tpe
-      val annotationClass: ClassSymbol    = macroTypeWithArguments.typeSymbol.asClass
-      val annotationTypePlaceholder: Type = annotationClass.typeParams.head.asType.toType
-      annotationTypePlaceholder.asSeenFrom(macroTypeWithArguments, annotationClass)
-    }
-    if (argumentType.finalResultType == c.typeOf[Nothing]) {
-      bail("Type parameter T must be provided")
-    }
+    val argumentType = getArgumentType[Type]()
+    annotteeShouldBeTrait(c)(annottees)
 
-    val inputs = annottees.map(_.tree).toList
-    if (!inputs.headOption.exists(_.isInstanceOf[ClassDef])) {
-      bail("Can annotate only trait")
-    }
     def toPick(s: Symbol, isJsNative: Boolean): Tree = {
       val decodedName = s.name.decodedName.toString
       val name        = TermName(decodedName)
@@ -78,29 +67,17 @@ object Pick {
         if (stringRep.startsWith("variable ")) {
           val m       = s.asMethod
           val retType = m.returnType
-          if (isJsNative) {
-            q"var $name: $retType = scala.scalajs.js.native"
-          } else {
-            q"var $name: $retType"
-          }
+          nativeIfNeeded(c)(q"var $name: $retType", isJsNative)
         } else if (stringRep.startsWith("value ")) {
           val tpt = s.typeSignature
-          if (isJsNative) {
-            q"val $name: $tpt = scala.scalajs.js.native"
-          } else {
-            q"val $name: $tpt"
-          }
+          nativeIfNeeded(c)(q"val $name: $tpt", isJsNative)
         } else {
           val m = s.asMethod
           val paramss = m.paramLists.map(_.map(param => {
             internal.valDef(param)
           }))
           val retType = m.returnType
-          if (isJsNative) {
-            q"def $name (...$paramss): $retType = scala.scalajs.js.native"
-          } else {
-            q"def $name (...$paramss): $retType"
-          }
+          nativeIfNeeded(c)(q"def $name (...$paramss): $retType", isJsNative)
         }
       }
     }
@@ -108,18 +85,9 @@ object Pick {
       case List(
           q"$mods trait $tpname[..$tparams] extends { ..$earlydefns } with ..$parents { $self => ..$ownMembers }"
           ) =>
-        val isJsNative = mods.annotations.exists {
-          case q"new scala.scalajs.js.native()" => true
-          case q"new scalajs.js.native()"       => true
-          case q"new js.native()"               => true
-          case _                                => false
-        }
-        val inheritedMembers =
-          // maybe decls instead of members?
-          (argumentType.members.toSet -- c.typeOf[js.Object].members.toSet).toList
-            .filterNot(_.isConstructor)
-            .sortBy(_.name.decodedName.toString)
-        val partialMembers = inheritedMembers.map(s => toPick(s, isJsNative))
+        val isJsNative       = isScalaJsNative(c)(mods)
+        val inheritedMembers = getInheritedMembers(c)(argumentType)
+        val partialMembers   = inheritedMembers.map(s => toPick(s, isJsNative))
         c.Expr[Any](q"""
           $mods trait $tpname[..$tparams] extends { ..$earlydefns } with ..$parents { $self => 
             ..$ownMembers

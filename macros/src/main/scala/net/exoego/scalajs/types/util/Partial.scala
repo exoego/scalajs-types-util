@@ -49,27 +49,22 @@ class Partial[T <: js.Object] extends StaticAnnotation {
 object Partial {
   def impl(c: blackbox.Context)(annottees: c.Expr[Any]*) = {
     import c.universe._
+    import Helper._
+    implicit val context = c
 
-    def bail(message: String) = c.abort(c.enclosingPosition, "Can annotate only trait")
     def toPartial(s: Symbol, isJsNative: Boolean): Tree = {
       val name      = TermName(s.name.decodedName.toString)
       val stringRep = s.toString
       if (stringRep.startsWith("value ")) {
         val tpt = s.typeSignature
-        if (isJsNative) {
-          q"val $name: js.UndefOr[$tpt] = scala.scalajs.js.native"
-        } else {
-          q"val $name: js.UndefOr[$tpt]"
-        }
+        nativeIfNeeded(c)(q"val $name: js.UndefOr[$tpt]", isJsNative)
       } else if (stringRep.startsWith("variable ")) {
         val m       = s.asMethod
         val retType = m.returnType
         if (retType == c.typeOf[Unit]) {
           EmptyTree
-        } else if (isJsNative) {
-          q"var $name: js.UndefOr[$retType] = scala.scalajs.js.native"
         } else {
-          q"var $name: js.UndefOr[$retType]"
+          nativeIfNeeded(c)(q"var $name: js.UndefOr[$retType]", isJsNative)
         }
       } else {
         val m = s.asMethod
@@ -77,46 +72,20 @@ object Partial {
           internal.valDef(param)
         }))
         val retType = m.returnType
-        if (isJsNative) {
-          q"def $name (...$paramss): $retType = scala.scalajs.js.native"
-        } else {
-          q"def $name (...$paramss): $retType"
-        }
+        nativeIfNeeded(c)(q"def $name(...$paramss): $retType", isJsNative)
       }
     }
 
-    val argumentType: Type = {
-      val macroTypeWithArguments          = c.typecheck(q"${c.prefix.tree}").tpe
-      val annotationClass: ClassSymbol    = macroTypeWithArguments.typeSymbol.asClass
-      val annotationTypePlaceholder: Type = annotationClass.typeParams.head.asType.toType
-      annotationTypePlaceholder.asSeenFrom(macroTypeWithArguments, annotationClass)
-    }
-
-    if (argumentType.finalResultType == c.typeOf[Nothing]) {
-      bail("Type parameter T must be provided")
-    }
-
-    val inputs = annottees.map(_.tree).toList
-    if (!inputs.headOption.exists(_.isInstanceOf[ClassDef])) {
-      bail("Can annotate only trait")
-    }
+    val argumentType = getArgumentType[Type]()
+    annotteeShouldBeTrait(c)(annottees)
 
     annottees.map(_.tree) match {
       case List(
           q"$mods trait $tpname[..$tparams] extends { ..$earlydefns } with ..$parents { $self => ..$ownMembers }"
           ) =>
-        val isJsNative = mods.annotations.exists {
-          case q"new scala.scalajs.js.native()" => true
-          case q"new scalajs.js.native()"       => true
-          case q"new js.native()"               => true
-          case _                                => false
-        }
-        val inheritedMembers =
-          // maybe decls instead of members?
-          (argumentType.members.toSet -- c.typeOf[js.Object].members.toSet).toList
-            .filterNot(_.isConstructor)
-            .sortBy(_.name.decodedName.toString)
-        val partialMembers = inheritedMembers.map(s => toPartial(s, isJsNative))
+        val isJsNative       = isScalaJsNative(c)(mods)
+        val inheritedMembers = getInheritedMembers(c)(argumentType)
+        val partialMembers   = inheritedMembers.map(s => toPartial(s, isJsNative))
         c.Expr[Any](q"""
           $mods trait $tpname[..$tparams] extends { ..$earlydefns } with ..$parents { $self => 
             ..$ownMembers

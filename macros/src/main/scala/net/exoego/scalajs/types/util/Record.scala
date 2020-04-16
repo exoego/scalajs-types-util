@@ -45,43 +45,23 @@ class Record[T <: js.Object](keys: String*) extends StaticAnnotation {
 object Record {
   def impl(c: blackbox.Context)(annottees: c.Expr[Any]*) = {
     import c.universe._
-
-    def bail(message: String) = c.abort(c.enclosingPosition, message)
+    import Helper._
+    implicit val context = c
 
     val specifiedFieldNames: Set[String] = c.prefix.tree match {
       case q"new Record[$a](..$b)" => b.map(_.toString.drop(1).dropRight(1)).toSet
       case _                       => bail("""@Record requires a type argument T and at-least one field names to be picked from T.""")
     }
-    val argumentType: Type = {
-      val macroTypeWithArguments          = c.typecheck(q"${c.prefix.tree}").tpe
-      val annotationClass: ClassSymbol    = macroTypeWithArguments.typeSymbol.asClass
-      val annotationTypePlaceholder: Type = annotationClass.typeParams.head.asType.toType
-      annotationTypePlaceholder.asSeenFrom(macroTypeWithArguments, annotationClass)
-    }
-    if (argumentType.finalResultType == c.typeOf[Nothing]) {
-      bail("Type parameter T must be provided")
-    }
+    val argumentType = getArgumentType[Type]()
+    annotteeShouldBeTrait(c)(annottees)
 
-    val inputs = annottees.map(_.tree).toList
-    if (!inputs.headOption.exists(_.isInstanceOf[ClassDef])) {
-      bail("Can annotate only trait")
-    }
     annottees.map(_.tree) match {
       case List(
           q"$mods trait $tpname[..$tparams] extends { ..$earlydefns } with ..$parents { $self => ..$ownMembers }"
           ) =>
-        val isJsNative = mods.annotations.exists {
-          case q"new scala.scalajs.js.native()" => true
-          case q"new scalajs.js.native()"       => true
-          case q"new js.native()"               => true
-          case _                                => false
-        }
+        val isJsNative = isScalaJsNative(c)(mods)
 
-        val inheritedMembers =
-          (argumentType.members.toSet -- c.typeOf[js.Object].members.toSet).toList
-            .filterNot(_.isConstructor)
-            .map(_.name.decodedName.toString)
-            .toSet
+        val inheritedMembers    = getInheritedMembers(c)(argumentType).map(_.name.decodedName.toString).toSet
         val duplicateProperties = specifiedFieldNames intersect inheritedMembers
         if (duplicateProperties.nonEmpty) {
           bail(s"""Duplicate keys: ${duplicateProperties.mkString(", ")}""")
@@ -89,11 +69,7 @@ object Record {
 
         val addedProperties = specifiedFieldNames.map { s =>
           val name = TermName(s)
-          if (isJsNative) {
-            q"var $name: $argumentType = scala.scalajs.js.native"
-          } else {
-            q"var $name: $argumentType"
-          }
+          nativeIfNeeded(c)(q"var $name: $argumentType", isJsNative)
         }.toList
 
         c.Expr[Any](q"""
