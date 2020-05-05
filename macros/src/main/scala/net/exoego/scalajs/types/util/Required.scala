@@ -93,7 +93,7 @@ object Required {
 
     annottees.map(_.tree) match {
       case List(
-          q"$mods trait $tpname[..$tparams] extends { ..$earlydefns } with ..$parents { $self => ..$ownMembers }"
+            q"$mods trait $tpname[..$tparams] extends { ..$earlydefns } with ..$parents { $self => ..$ownMembers }"
           ) =>
         val isJsNative       = isScalaJsNative(c)(mods)
         val inheritedMembers = getInheritedMembers(c)(argumentType)
