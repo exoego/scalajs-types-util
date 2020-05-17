@@ -1,6 +1,5 @@
 package net.exoego.scalajs.types.util
 
-import scala.reflect.internal.Trees
 import scala.reflect.macros.blackbox
 import scala.scalajs.js
 
@@ -11,9 +10,10 @@ private[util] object Helper {
 
   def annotteeShouldBeTrait(c: blackbox.Context)(annottees: Seq[c.Expr[Any]]): Unit = {
     import c.universe._
-    val inputs = annottees.map(_.tree).toList
-    if (!inputs.headOption.exists(_.isInstanceOf[ClassDef])) {
-      bail("Can annotate only trait")(c)
+    annottees match {
+      case List(Expr(ClassDef(mods, _, _, _))) if mods.hasFlag(Flag.TRAIT) =>
+      case _ =>
+        bail(s"Can annotate only trait")(c)
     }
   }
 
