@@ -4,14 +4,20 @@ import scala.reflect.macros.blackbox
 import scala.scalajs.js
 
 private[util] object Helper {
+  private final val libraryNamePrefix: String = "[scalajs-types-util]"
+  def warning(message: String)(implicit c: blackbox.Context): Unit = {
+    c.warning(c.enclosingPosition, s"${libraryNamePrefix} ${message}")
+  }
   def bail(message: String)(implicit c: blackbox.Context): Nothing = {
-    c.abort(c.enclosingPosition, message)
+    c.abort(c.enclosingPosition, s"${libraryNamePrefix} ${message}")
   }
 
   def annotteeShouldBeTrait(c: blackbox.Context)(annottees: Seq[c.Expr[Any]]): Unit = {
     import c.universe._
     annottees match {
       case List(Expr(ClassDef(mods, _, _, _))) if mods.hasFlag(Flag.TRAIT) =>
+      case List(Expr(ClassDef(mods, className, _, _)), Expr(ModuleDef(_, moduleName, _)))
+          if mods.hasFlag(Flag.TRAIT) && className.toTermName == moduleName =>
       case _ =>
         bail(s"Can annotate only trait")(c)
     }
