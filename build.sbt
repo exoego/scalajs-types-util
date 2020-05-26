@@ -29,6 +29,7 @@ lazy val root = project
 lazy val macros = project
   .in(file("macros"))
   .settings(
+    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) },
     compilerSettings,
     metaMacroSettings,
     libraryDependencies ++= {
