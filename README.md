@@ -18,3 +18,18 @@ Add below line to your SBT project.
 ```sbt
 libraryDependencies += "net.exoego" %%% "scalajs-types-util" % "0.1.0"
 ```
+
+```scala
+import scala.scalajs.js
+import net.exoego.scalajs.types.util.Factory
+
+@Factory
+trait Foo extends js.Object {
+  var x: Int
+  var y: js.UndefOr[String]]
+}
+
+val f = Foo(x = 1)
+assert(f.x === 1)
+assert(f.isEmpty)
+```
