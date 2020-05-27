@@ -60,7 +60,7 @@ object Omit {
     def toPick(s: Symbol, isJsNative: Boolean): Tree = {
       val decodedName = s.name.decodedName.toString
       val name        = TermName(decodedName)
-      if (specifiedFieldNames.contains(decodedName)) {
+      if (specifiedFieldNames.contains(decodedName) || decodedName.endsWith("_=")) {
         EmptyTree
       } else {
         val stringRep = s.toString
@@ -88,13 +88,22 @@ object Omit {
         val isJsNative = isScalaJsNative(c)(mods)
 
         val inheritedMembers = getInheritedMembers(c)(argumentType)
-        val partialMembers   = inheritedMembers.map(s => toPick(s, isJsNative))
-        c.Expr[Any](q"""
+        val partialMembers   = inheritedMembers.map(s => toPick(s, isJsNative)).filterNot(_.isEmpty)
+        val verOwnMembers = ownMembers.filter(s => {
+          // FIXME
+          !inheritedMembers.contains(s.symbol)
+        })
+        val result = c.Expr[Any](q"""
           $mods trait $tpname[..$tparams] extends { ..$earlydefns } with ..$parents { $self => 
-            ..$ownMembers
+            ..$verOwnMembers
             ..$partialMembers
           }
         """)
+        println()
+        println()
+        println()
+        println(result)
+        result
       case _ => bail("Must be a trait")
     }
   }

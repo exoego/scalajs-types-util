@@ -65,6 +65,19 @@ class OmitTest extends AnyFlatSpec with Matchers {
       | a.bar("yay")
       | """.stripMargin shouldNot compile
   }
+
+  it should "exclude inherited members by name" in {
+    """ val a: OmitInherited = ???
+      | val y: Int = a.own
+      | """.stripMargin shouldNot compile
+  }
+
+  it should "include inherited members" in {
+    """ val a: OmitInherited = ???
+      | val x: String = a.name
+      | val y: Int = a.own2
+      | """.stripMargin should compile
+  }
 }
 
 @Omit[Foo]("x", "bar")
@@ -79,4 +92,10 @@ trait OmitFoo extends js.Object {
 trait OmitBar extends js.Object {
   var own: Boolean
   def buz(x: String): Int
+}
+
+@Omit[OmitFoo]("own")
+@js.native
+trait OmitInherited extends OmitFoo {
+  var own2: Int = js.native
 }
