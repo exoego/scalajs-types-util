@@ -68,8 +68,12 @@ object Factory {
         warning("Can't add factory method to companion object with type alias. This is known limitation.")
         return md
       }
+      val traitType = c.typecheck(q"${cd}").symbol.asClass.toType
+      if (!traitType.baseClasses.contains(c.symbolOf[js.Object])) {
+        bail("Trait must extends scala.scalajs.js.Object.")
+      }
       val members: Seq[(Boolean, Symbol)] =
-        (c.typecheck(q"${cd}").symbol.asClass.toType.members.toSet -- c.typeOf[js.Object].members.toSet).toList
+        (traitType.members.toSet -- c.typeOf[js.Object].members.toSet).toList
           .filterNot(_.isConstructor)
           .map(s => {
             val isDefined = !(s.typeSignature.finalResultType <:< c.typeOf[js.UndefOr[_]])

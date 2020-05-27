@@ -15,14 +15,26 @@ class FactoryTest extends AnyFlatSpec with Matchers {
     """def x(@Factory y: X): String = "a"""" shouldNot compile
   }
 
-  it should "compile when applied to a Scala.js-native trait" in {
-    """@Factory @js.native trait X""" should compile
-    """@Factory @js.native trait X {}""" should compile
+  it should "compile when applied to a Scala.js-native trait extending js.Object" in {
+    """@Factory @js.native trait X extends js.Object""" should compile
+    """@Factory @js.native trait X extends js.Object {}""" should compile
+    """@Factory @js.native trait X extends scala.scalajs.js.Object {}""" should compile
   }
 
-  it should "also compile when applied to a Scala-native trait" in {
-    """@Factory trait X""" should compile
-    """@Factory trait X {}""" should compile
+  it should "not compile when applied to a trait not extending js.Object" in {
+    """@Factory @js.native trait X""" shouldNot compile
+    """@Factory @js.native trait X {}""" shouldNot compile
+  }
+
+  it should "also compile when applied to a Scala-native trait extending js.Object" in {
+    """@Factory trait X extends js.Object""" should compile
+    """@Factory trait X extends js.Object {}""" should compile
+    """@Factory trait X extends scala.scalajs.js.Object {}""" should compile
+  }
+
+  it should "not a compile when applied to a Scala-native trait not ext" in {
+    """@Factory trait X""" shouldNot compile
+    """@Factory trait X {}""" shouldNot compile
   }
 
   "factory method " should "have defined parameter" in {
