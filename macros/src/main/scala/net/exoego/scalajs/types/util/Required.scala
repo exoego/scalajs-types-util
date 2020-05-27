@@ -55,7 +55,7 @@ object Required {
     import Helper._
     implicit val context = c
 
-    val jsUndefOrSymbol = c.symbolOf[UndefOr[_]]
+    val jsUndefOrSymbol = c.typeOf[scala.scalajs.js.UndefOr[_]].typeSymbol
     def unwrap(retType: c.universe.Type): c.universe.Type = {
       if (retType.typeSymbol == jsUndefOrSymbol) {
         retType.finalResultType.typeArgs.head
