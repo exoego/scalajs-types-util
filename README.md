@@ -16,5 +16,5 @@ Scala.js types utility to facilitate common type transformations
 Add below line to your SBT project.
 
 ```sbt
-libraryDependencies += "net.exoego" %%% "scalajs-util-types" % "0.1.0"
+libraryDependencies += "net.exoego" %%% "scalajs-types-util" % "0.1.0"
 ```
