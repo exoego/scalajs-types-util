@@ -57,6 +57,9 @@ class OmitTest extends AnyFlatSpec with Matchers {
     """ val a: OmitFoo = ???
       | a.bar("yay")
       | """.stripMargin shouldNot compile
+    """ val a: OmitFoo = ???
+      | a.`type`
+      | """.stripMargin shouldNot compile
 
     """ val a: OmitBar = ???
       | a.x
@@ -67,7 +70,7 @@ class OmitTest extends AnyFlatSpec with Matchers {
   }
 }
 
-@Omit[Foo]("x", "bar")
+@Omit[Foo]("x", "bar", "type")
 @js.native
 trait OmitFoo extends js.Object {
   var own: Boolean        = js.native

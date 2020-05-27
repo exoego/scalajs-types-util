@@ -27,6 +27,7 @@ class ReadOnlyTest extends AnyFlatSpec with Matchers {
   it should "have own property as-is" in {
     """ val a: ReadOnlyFoo = ???
       | val b: Boolean = a.own
+      | val c: String = a.`type`
       | """.stripMargin should compile
     """ val a: ReadOnlyBar = ???
       | val b: Boolean = a.own
@@ -39,6 +40,9 @@ class ReadOnlyTest extends AnyFlatSpec with Matchers {
       | """.stripMargin should compile
     """ val a: ReadOnlyFoo = ???
       | a.name = ""
+      | """.stripMargin shouldNot compile
+    """ val a: ReadOnlyFoo = ???
+      | a.`type` = ""
       | """.stripMargin shouldNot compile
 
     """ val a: ReadOnlyBar = ???

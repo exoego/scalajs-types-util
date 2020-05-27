@@ -38,6 +38,7 @@ class RequiredTest extends AnyFlatSpec with Matchers {
       | val b: Int = a.a
       | val c: String = a.b
       | val d: Boolean = a.c
+      | val e: String = a.`type`
       | """.stripMargin should compile
     """ val a: RequiredBar = ???
       | val b: Int = a.a
