@@ -32,9 +32,10 @@ class FactoryTest extends AnyFlatSpec with Matchers {
     """@Factory trait X extends scala.scalajs.js.Object {}""" should compile
   }
 
-  it should "not a compile when applied to a Scala-native trait not ext" in {
+  it should "not compile when applied to a Scala-native trait not extending js.Object" in {
     """@Factory trait X""" shouldNot compile
     """@Factory trait X {}""" shouldNot compile
+    """@Factory trait X extends Seq[Int]""" shouldNot compile
   }
 
   "factory method " should "have defined parameter" in {
@@ -71,6 +72,16 @@ class FactoryTest extends AnyFlatSpec with Matchers {
 
   it should "be added to the companion object with nested member" ignore {
     """ val a: Nested = Nested(name = "yay")
+      | """.stripMargin should compile
+  }
+
+  it should "have inherited members as parameter" in {
+    """ val a: Inherited = Inherited(own = 42)
+      | """.stripMargin shouldNot compile
+
+    """ val a: Inherited = Inherited(name= "yay", own = 42)
+      | val x: String = a.name
+      | val y: Int = a.own
       | """.stripMargin should compile
   }
 }
@@ -110,4 +121,9 @@ trait Nested extends js.Object {
 }
 object Nested {
   type Z = String
+}
+
+@Factory
+trait Inherited extends TargetScalaNative {
+  var own: Int
 }
