@@ -1,3 +1,6 @@
+import sbt._
+import sbt.Keys._
+
 organization in ThisBuild := "net.exoego"
 name in ThisBuild := "scalajs-types-util"
 
@@ -24,6 +27,7 @@ lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
 lazy val root = project
   .in(file("."))
   .aggregate(macros)
+  .settings(name := "scalajs-types-util")
 
 lazy val macros = project
   .in(file("macros"))
@@ -38,6 +42,38 @@ lazy val macros = project
         "org.scalameta" %%% "scalameta" % (if (isSjs06) "4.3.10" else "4.3.12"),
         "org.scalatest" %%% "scalatest" % "3.1.2" % Test
       )
-    }
+    },
+    licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
+    scmInfo := Some(
+      ScmInfo(
+        url("https://github.com/exoego/scalajs-types-util"),
+        "scm:git:git@github.com:exoego/scalajs-types-util.git"
+      )
+    ),
+    homepage := scmInfo.value.map(_.browseUrl),
+    developers := List(
+      Developer(
+        id = "exoego",
+        name = "TATSUNO Yasuhiro",
+        email = "ytatsuno.jp@gmail.com",
+        url = url("https://www.exoego.net")
+      )
+    ),
+    publishMavenStyle := true,
+    publishArtifact in Test := false,
+    publishArtifact in (Compile, packageDoc) := true,
+    publishArtifact in (Compile, packageSrc) := true,
+    publishArtifact in packageDoc := true,
+    pomIncludeRepository := { _ =>
+      false
+    },
+    publishTo := Some(
+      if (isSnapshot.value)
+        Opts.resolver.sonatypeSnapshots
+      else
+        Opts.resolver.sonatypeStaging
+    ),
+    publishConfiguration := publishConfiguration.value.withOverwrite(false),
+    publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
   )
   .enablePlugins(ScalaJSPlugin)
