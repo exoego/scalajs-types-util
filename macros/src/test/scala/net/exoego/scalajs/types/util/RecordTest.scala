@@ -42,6 +42,7 @@ class RecordTest extends AnyFlatSpec with Matchers {
       | val b: PageInfo = a.about
       | val c: PageInfo = a.contact
       | val d: PageInfo = a.home
+      | val x: String = d.`type`
       | """.stripMargin should compile
   }
 
@@ -49,6 +50,7 @@ class RecordTest extends AnyFlatSpec with Matchers {
 
 trait PageInfo extends js.Object {
   var title: String;
+  var `type`: String
 }
 
 @Record[PageInfo]("about", "contact", "home")

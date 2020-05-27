@@ -43,6 +43,7 @@ class PickTest extends AnyFlatSpec with Matchers {
   it should "have picked members" in {
     """ val a: PickFoo = ???
       | val b: String = a.name
+      | val c: String = a.`type`
       | """.stripMargin should compile
 
     """ val a: PickBar = ???
@@ -73,7 +74,7 @@ class PickTest extends AnyFlatSpec with Matchers {
   }
 }
 
-@Pick[Foo]("name")
+@Pick[Foo]("name", "type")
 @js.native
 trait PickFoo extends js.Object {
   var own: Boolean        = js.native

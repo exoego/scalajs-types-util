@@ -37,6 +37,7 @@ class PartialTest extends AnyFlatSpec with Matchers {
     """ val a: PartialFoo = ???
       | val b: js.UndefOr[String] = a.name
       | val c: js.UndefOr[js.Array[Int]] = a.x
+      | val d: js.UndefOr[String] = a.`type`
       | """.stripMargin should compile
     """ val a: PartialBar = ???
       | val b: js.UndefOr[String] = a.name
@@ -48,6 +49,8 @@ class PartialTest extends AnyFlatSpec with Matchers {
     """ val a: PartialFoo = ???
       | a.name = js.undefined
       | a.name = "yay"
+      | a.`type` = js.undefined
+      | a.`type` = "wow"
       | """.stripMargin should compile
     """ val a: PartialBar = ???
       | a.name = js.undefined

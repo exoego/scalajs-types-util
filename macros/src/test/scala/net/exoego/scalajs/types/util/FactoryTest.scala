@@ -55,6 +55,12 @@ class FactoryTest extends AnyFlatSpec with Matchers {
       | """.stripMargin should compile
   }
 
+  it should "have backquoted member as parameter" in {
+    """ val a: Target = Target(name = "yay", `type` = "wow")
+      | val x: String = a.`type`.getOrElse("")
+      | """.stripMargin should compile
+  }
+
   it should "have parameters for variable and value members" in {
     """ val a: Target = Target(name = "yay", age = 1, hoge = true)
       | """.stripMargin should compile
@@ -89,9 +95,10 @@ class FactoryTest extends AnyFlatSpec with Matchers {
 @Factory
 @js.native
 trait Target extends js.Object {
-  val hoge: js.UndefOr[Boolean] = js.native
-  var age: js.UndefOr[Int]      = js.native
-  var name: String              = js.native
+  val hoge: js.UndefOr[Boolean]  = js.native
+  var age: js.UndefOr[Int]       = js.native
+  var name: String               = js.native
+  var `type`: js.UndefOr[String] = js.native
 
   def foo: String = js.native
 }
