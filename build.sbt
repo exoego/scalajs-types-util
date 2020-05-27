@@ -1,6 +1,5 @@
 organization in ThisBuild := "net.exoego"
 name in ThisBuild := "scalajs-types-util"
-version in ThisBuild := "0.1"
 
 lazy val compilerSettings: Seq[Def.Setting[_]] = Seq(
   scalacOptions ++= Seq("-deprecation"),
