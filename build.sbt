@@ -1,6 +1,6 @@
-name := "scalajs-util-types"
-
-version := "0.1"
+organization in ThisBuild := "net.exoego"
+name in ThisBuild := "scalajs-types-util"
+version in ThisBuild := "0.1"
 
 lazy val compilerSettings: Seq[Def.Setting[_]] = Seq(
   scalacOptions ++= Seq("-deprecation"),
@@ -29,6 +29,7 @@ lazy val root = project
 lazy val macros = project
   .in(file("macros"))
   .settings(
+    name := "scalajs-types-util",
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) },
     compilerSettings,
     metaMacroSettings,
