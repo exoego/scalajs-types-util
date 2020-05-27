@@ -24,6 +24,7 @@ lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
 lazy val root = project
   .in(file("."))
   .aggregate(macros)
+  .settings(name := "scalajs-types-util")
 
 lazy val macros = project
   .in(file("macros"))
