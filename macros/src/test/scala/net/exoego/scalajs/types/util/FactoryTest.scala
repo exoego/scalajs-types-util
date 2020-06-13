@@ -4,6 +4,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 import scala.scalajs.js
+import scala.scalajs.js.annotation.JSName
 
 class FactoryTest extends AnyFlatSpec with Matchers {
   "Factory macro" should "not compile when NOT applied to a trait" in {
@@ -85,7 +86,7 @@ class FactoryTest extends AnyFlatSpec with Matchers {
     """ val a: Inherited = Inherited(own = 42)
       | """.stripMargin shouldNot compile
 
-    """ val a: Inherited = Inherited(name= "yay", own = 42)
+    """ val a: Inherited = Inherited(name= "yay", own = 42, type_ = "wow")
       | val x: String = a.name
       | val y: Int = a.own
       | """.stripMargin should compile
@@ -133,4 +134,6 @@ object Nested {
 @Factory
 trait Inherited extends TargetScalaNative {
   var own: Int
+  @JSName("type") var type_ : String
+  @JSName("NAMED") var named: js.UndefOr[String] = js.undefined
 }
