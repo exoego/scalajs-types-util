@@ -72,6 +72,17 @@ object Factory {
       if (!traitType.baseClasses.contains(c.symbolOf[js.Object])) {
         bail("Trait must extends scala.scalajs.js.Object.")
       }
+      val jsNameType = c.typeOf[js.annotation.JSName]
+      def symbolToJSKeyName(s: Symbol): String = {
+        val jsName = s.annotations.collectFirst {
+          case t if t.tree.tpe == jsNameType =>
+            t.tree.children.tail.head
+        }
+        jsName match {
+          case Some(Literal(Constant(name: String))) => name
+          case None                                  => s.name.toTermName.toString
+        }
+      }
       val members: Seq[(Boolean, Symbol)] =
         (traitType.members.toSet -- c.typeOf[js.Object].members.toSet).toList
           .filterNot(_.isConstructor)
@@ -91,12 +102,14 @@ object Factory {
         val requiredArgs: Seq[c.universe.Apply] = groupedByDefined.getOrElse(true, Seq.empty).map {
           case (_, s) =>
             val memberName = s.name.toTermName
-            q"${memberName.toString} -> $memberName.asInstanceOf[scala.scalajs.js.Any]".asInstanceOf[Apply]
+            val jsKeyName  = symbolToJSKeyName(s)
+            q"${jsKeyName} -> $memberName.asInstanceOf[scala.scalajs.js.Any]".asInstanceOf[Apply]
         }
         val optionalArgs = groupedByDefined.getOrElse(false, Seq.empty).map {
           case (_, s) =>
             val memberName = s.name.toTermName
-            q"$memberName.foreach(v$$ => obj$$.updateDynamic(${memberName.toString})(v$$.asInstanceOf[js.Any])) "
+            val jsKeyName  = symbolToJSKeyName(s)
+            q"$memberName.foreach(v$$ => obj$$.updateDynamic(${jsKeyName})(v$$.asInstanceOf[js.Any])) "
               .asInstanceOf[Apply]
         }
         q"""
