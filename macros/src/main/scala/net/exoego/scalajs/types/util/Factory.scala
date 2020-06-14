@@ -68,7 +68,7 @@ object Factory {
         warning("Can't add factory method to companion object with type alias. This is known limitation.")
         return md
       }
-      val traitType = c.typecheck(q"${cd}").symbol.asClass.toType
+      val traitType = c.typecheck(cd).symbol.asClass.toType
       if (!traitType.baseClasses.contains(c.symbolOf[js.Object])) {
         bail("Trait must extends scala.scalajs.js.Object.")
       }
