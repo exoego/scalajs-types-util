@@ -1,6 +1,6 @@
 package net.exoego.scalajs.types.util
 
-import scala.annotation.StaticAnnotation
+import scala.annotation.{StaticAnnotation, compileTimeOnly}
 import scala.language.experimental.macros
 import scala.reflect.macros.blackbox
 import scala.scalajs.js
@@ -51,6 +51,7 @@ import scala.scalajs.js
   *
   *
   */
+@compileTimeOnly("Enable macro to expand this macro annotation")
 class Factory extends StaticAnnotation {
   def macroTransform(annottees: Any*): Any = macro Factory.impl
 }
