@@ -39,6 +39,10 @@ class FactoryTest extends AnyFlatSpec with Matchers {
     """@Factory trait X extends Seq[Int]""" shouldNot compile
   }
 
+  it should "support generic types" in {
+    """val o: GenericTrait[String, Int] = GenericTrait[String, Int](a = "yay", b = 42)""" should compile
+  }
+
   "factory method " should "have defined parameter" in {
     """ val a: Target = Target(name = "yay")
       | """.stripMargin should compile
@@ -140,4 +144,10 @@ trait Inherited extends TargetScalaNative {
   var own: Int
   @JSName("type") var type_ : String
   @JSName("NAMED") var named: js.UndefOr[String] = js.undefined
+}
+
+@Factory
+trait GenericTrait[A, B] extends js.Object {
+  val a: A
+  val b: B
 }
