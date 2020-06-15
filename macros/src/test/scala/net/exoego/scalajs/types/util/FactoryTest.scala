@@ -77,8 +77,8 @@ class FactoryTest extends AnyFlatSpec with Matchers {
         | """.stripMargin should compile
   }
 
-  it should "be added to the companion object with nested member" ignore {
-    """ val a: Nested = Nested(name = "yay")
+  it should "be added to the companion object with nested member" in {
+    """ val a: Nested = Nested(name = "yay", foo = 42)
       | """.stripMargin should compile
   }
 
@@ -122,9 +122,13 @@ object Existing {
   val Z = "yay"
 }
 
+@js.native
+trait Hoge extends js.Object {
+  var foo: Int = js.native
+}
 @Factory
 @js.native
-trait Nested extends js.Object {
+trait Nested extends Hoge {
   var name: Nested.Z = js.native
 }
 object Nested {
