@@ -63,10 +63,32 @@ object Factory {
 
     annotteeShouldBeTrait(c)(annottees)
 
-    def addFactoryMethod(cd: ClassDef, md: ModuleDef, isJsNative: Boolean): ModuleDef = {
-      if (md.impl.exists(_.isInstanceOf[TypeDef])) {
-        warning("Can't add factory method to companion object with type alias. This is known limitation.")
-        return md
+    def addFactoryMethod(rawCd: ClassDef, md: ModuleDef, isJsNative: Boolean): ModuleDef = {
+      val cd = if (!md.impl.exists(_.isInstanceOf[TypeDef])) {
+        rawCd
+      } else {
+        val aliasToTypes = md.impl.collect {
+          case td: TypeDef => s"${rawCd.name}.${td.name}" -> td.children.head
+        }.toMap
+        ClassDef(
+          mods = rawCd.mods,
+          name = rawCd.name,
+          tparams = rawCd.tparams,
+          impl = Template(
+            parents = rawCd.impl.parents,
+            self = rawCd.impl.self,
+            body = rawCd.impl.body.map {
+              case vd: ValDef if aliasToTypes.contains(vd.tpt.toString) =>
+                ValDef(
+                  mods = vd.mods,
+                  name = vd.name,
+                  tpt = aliasToTypes(vd.tpt.toString),
+                  rhs = vd.rhs
+                )
+              case otherwise => otherwise
+            }
+          )
+        )
       }
       val traitType = c.typecheck(cd).symbol.asClass.toType
       if (!traitType.baseClasses.contains(c.symbolOf[js.Object])) {
