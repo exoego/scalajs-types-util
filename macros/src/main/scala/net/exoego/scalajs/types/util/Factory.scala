@@ -48,8 +48,6 @@ import scala.scalajs.js
   *   override var name = "omg"
   * }
   * }}}
-  *
-  *
   */
 @compileTimeOnly("Enable macro to expand this macro annotation")
 class Factory extends StaticAnnotation {
