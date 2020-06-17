@@ -101,6 +101,11 @@ class FactoryTest extends AnyFlatSpec with Matchers {
       | val y: Int = a.own
       | """.stripMargin should compile
   }
+
+  it should "be added to the nested companion object" in {
+    """ val a: Outer.Inner = Outer.Inner(x = "yay", y = Outer.Inner.Inner2(z = "www"))
+      | """.stripMargin should compile
+  }
 }
 
 @Factory
@@ -162,4 +167,19 @@ trait Inherited extends js.Object with TargetScalaNative {
 trait GenericTrait[A, B] extends js.Object {
   val a: A
   val b: B
+}
+
+object Outer {
+  @Factory(false)
+  trait Inner extends js.Object {
+    var x: String
+    val y: Inner.Inner2
+  }
+
+  object Inner {
+    @Factory(false)
+    trait Inner2 extends js.Object {
+      var z: String
+    }
+  }
 }
