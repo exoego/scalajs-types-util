@@ -65,7 +65,7 @@ object Factory {
     annotteeShouldBeTrait(c)(annottees)
 
     def addFactoryMethod(rawCd: ClassDef, md: ModuleDef, isJsNative: Boolean): ModuleDef = {
-      val cd = if (!md.impl.exists(_.isInstanceOf[TypeDef])) {
+      val cd: ClassDef = if (!md.impl.exists(_.isInstanceOf[TypeDef])) {
         rawCd
       } else {
         val aliasToTypes = md.impl.collect {
