@@ -65,7 +65,7 @@ object Factory {
     annotteeShouldBeTrait(c)(annottees)
 
     def addFactoryMethod(rawCd: ClassDef, md: ModuleDef, isJsNative: Boolean): ModuleDef = {
-      val cd = if (!md.impl.exists(_.isInstanceOf[TypeDef])) {
+      val cd: ClassDef = if (!md.impl.exists(_.isInstanceOf[TypeDef])) {
         rawCd
       } else {
         val aliasToTypes = md.impl.collect {
@@ -95,7 +95,19 @@ object Factory {
       if (!traitType.baseClasses.contains(c.symbolOf[js.Object])) {
         bail("Trait must extends scala.scalajs.js.Object.")
       }
-      val jsNameType = c.typeOf[js.annotation.JSName]
+      val typeArguments = traitType.typeArgs.map { a =>
+        TypeDef(
+          Modifiers(Flag.PARAM),
+          TypeName(a.toString),
+          List.empty,
+          TypeBoundsTree(TypeTree(), TypeTree())
+        )
+      }
+      val typeParams = traitType.typeArgs.map { a =>
+        TypeName(a.toString)
+      }
+      val genericTypeNames = typeParams.map(t => t.toString -> t).toMap
+      val jsNameType       = c.typeOf[js.annotation.JSName]
       def symbolToJSKeyName(s: Symbol): String = {
         val jsName = s.annotations.collectFirst {
           case t if t.tree.tpe == jsNameType =>
@@ -140,7 +152,7 @@ object Factory {
              ..$requiredArgs
            )
            ..$optionalArgs
-           obj$$.asInstanceOf[${md.name.toTypeName}]
+           obj$$.asInstanceOf[${md.name.toTypeName}[..${typeParams}]]
          """
       }
       val arguments = members
@@ -152,10 +164,19 @@ object Factory {
               EmptyTree
             } else {
               val returnType = s.asMethod.returnType
-              if (isDefined) {
-                q"${name}: ${returnType}"
-              } else {
-                ValDef(Modifiers(), name, q"${returnType}", q"scala.scalajs.js.undefined")
+              genericTypeNames.get(returnType.toString) match {
+                case Some(value) =>
+                  if (isDefined) {
+                    q"${name}: ${value}"
+                  } else {
+                    bail("Generics parameter in js.UndefOr[...] is not supported yet")
+                  }
+                case None =>
+                  if (isDefined) {
+                    q"${name}: ${returnType}"
+                  } else {
+                    ValDef(Modifiers(), name, q"${returnType}", q"scala.scalajs.js.undefined")
+                  }
               }
             }
         }
@@ -168,9 +189,9 @@ object Factory {
           noSelfType,
           md.impl.body ++ List(
             q"""
-            def apply(
+            def apply[..${typeArguments}](
               ..$arguments
-            ): ${md.name.toTypeName} = { ..$impl }
+            ): ${md.name.toTypeName}[..${typeParams}] = { ..${impl} }
             """
           )
         )
