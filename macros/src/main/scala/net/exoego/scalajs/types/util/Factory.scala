@@ -62,74 +62,64 @@ object Factory {
 
     annotteeShouldBeTrait(c)(annottees)
 
-    def addFactoryMethod(rawCd: ClassDef, md: ModuleDef, isJsNative: Boolean): ModuleDef = {
-      val cd: ClassDef = if (!md.impl.exists(_.isInstanceOf[TypeDef])) {
-        rawCd
-      } else {
-        val aliasToTypes = md.impl.collect {
-          case td: TypeDef => s"${rawCd.name}.${td.name}" -> td.children.head
-        }.toMap
-        ClassDef(
-          mods = rawCd.mods,
-          name = rawCd.name,
-          tparams = rawCd.tparams,
-          impl = Template(
-            parents = rawCd.impl.parents,
-            self = rawCd.impl.self,
-            body = rawCd.impl.body.map {
-              case vd: ValDef if aliasToTypes.contains(vd.tpt.toString) =>
-                ValDef(
-                  mods = vd.mods,
-                  name = vd.name,
-                  tpt = aliasToTypes(vd.tpt.toString),
-                  rhs = vd.rhs
-                )
-              case otherwise => otherwise
+    def addFactoryMethod(cd: ClassDef, md: ModuleDef, isJsNative: Boolean): ModuleDef = {
+      val classType: Option[c.universe.Type] =
+        try {
+          Option(c.typecheck(cd).symbol.asClass.toType).filter(_ != NoType)
+        } catch {
+          case e: AssertionError =>
+            warning(
+              s"@Factory macro failed to type check the trait `${cd.name}` so inherited members are not added to factory method. Reason: ${e.getMessage}"
+            )
+            None
+        }
+      if (!cd.impl.parents.map(_.toString).exists(_.endsWith("js.Object"))) {
+        bail(
+          "Trait must explicitly extends scala.scalajs.js.Object, or js.Object in short form. E.g. trait X extends js.Object with Y"
+        )
+      }
+      val inheritedMembers: Seq[ValDef] = classType match {
+        case None => Seq.empty
+        case Some(traitType) =>
+          val list: Seq[Symbol] = (traitType.members.toSet -- c.typeOf[js.Object].members.toSet).toList
+          list
+            .filterNot(_.isConstructor)
+            .filterNot { s =>
+              // TODO: Do not rely on string rep since toString is slow
+              val rep = s.toString
+              rep.startsWith("method ") || rep.startsWith("variable ") && s.asMethod.returnType == c.typeOf[Unit]
             }
-          )
-        )
+            .map(syn => {
+              val isDefined = !(syn.typeSignature.finalResultType <:< c.typeOf[js.UndefOr[_]])
+              val rhs       = if (isDefined) EmptyTree else q"scala.scalajs.js.undefined"
+              ValDef(Modifiers(), syn.name.toTermName, tq"${syn.typeSignature.finalResultType}", rhs)
+            })
       }
-      val traitType = c.typecheck(cd).symbol.asClass.toType
-      if (!traitType.baseClasses.contains(c.symbolOf[js.Object])) {
-        bail("Trait must extends scala.scalajs.js.Object.")
-      }
-      val typeArguments = traitType.typeArgs.map { a =>
-        TypeDef(
-          Modifiers(Flag.PARAM),
-          TypeName(a.toString),
-          List.empty,
-          TypeBoundsTree(TypeTree(), TypeTree())
-        )
-      }
-      val typeParams = traitType.typeArgs.map { a =>
-        TypeName(a.toString)
-      }
-      val genericTypeNames = typeParams.map(t => t.toString -> t).toMap
-      val jsNameType       = c.typeOf[js.annotation.JSName]
-      def symbolToJSKeyName(s: Symbol): String = {
-        val jsName = s.annotations.collectFirst {
-          case t if t.tree.tpe == jsNameType =>
-            t.tree.children.tail.head
+
+      val typeParams = cd.tparams.map(_.name.toTypeName)
+      val jsNameType = c.typeOf[js.annotation.JSName]
+      def symbolToJSKeyName(s: ValOrDefDef): String = {
+        val jsName = s.mods.annotations.collectFirst {
+          case t if t.tpe == jsNameType =>
+            t.children.tail.head
         }
         jsName match {
           case Some(Literal(Constant(name: String))) => name
           case None                                  => s.name.toTermName.toString
         }
       }
-      val members: Seq[(Boolean, Symbol)] =
-        (traitType.members.toSet -- c.typeOf[js.Object].members.toSet).toList
-          .filterNot(_.isConstructor)
-          .map(s => {
-            val isDefined = !(s.typeSignature.finalResultType <:< c.typeOf[js.UndefOr[_]])
-            (isDefined, s)
-          })
-          .filterNot {
-            case (_, s) =>
-              // TODO: Do not rely on string rep since toString is slow
-              val rep = s.toString
-              rep.startsWith("method ") || rep.startsWith("variable ") && s.asMethod.returnType == c.typeOf[Unit]
+
+      val members: Seq[(Boolean, ValDef)] = {
+        val ownValues = cd.impl.body.collect { case x: ValDef => x }
+        distinctBy(ownValues ++ inheritedMembers)(_.name)
+          .map { tree =>
+            val tpes      = tree.tpt.toString()
+            val isDefined = !(tpes.startsWith("js.UndefOr") || tpes.startsWith("scala.scalajs.js.UndefOr"))
+            (isDefined, tree)
           }
           .sortBy(p => (!p._1, p._2.name.toString))
+      }
+
       val impl = {
         val groupedByDefined = members.groupBy(_._1)
         val requiredArgs: Seq[c.universe.Apply] = groupedByDefined.getOrElse(true, Seq.empty).map {
@@ -156,26 +146,12 @@ object Factory {
       val arguments = members
         .map {
           case (isDefined, s) =>
-            val name      = TermName(s.name.decodedName.toString)
-            val stringRep = s.toString
-            if (!stringRep.startsWith("value ") && !stringRep.startsWith("variable ")) {
-              EmptyTree
+            val name       = TermName(s.name.decodedName.toString)
+            val returnType = s.tpt
+            if (isDefined) {
+              q"${name}: ${returnType}"
             } else {
-              val returnType = s.asMethod.returnType
-              genericTypeNames.get(returnType.toString) match {
-                case Some(value) =>
-                  if (isDefined) {
-                    q"${name}: ${value}"
-                  } else {
-                    bail("Generics parameter in js.UndefOr[...] is not supported yet")
-                  }
-                case None =>
-                  if (isDefined) {
-                    q"${name}: ${returnType}"
-                  } else {
-                    ValDef(Modifiers(), name, q"${returnType}", q"scala.scalajs.js.undefined")
-                  }
-              }
+              ValDef(Modifiers(Flag.PARAM), name, q"${returnType}", q"scala.scalajs.js.undefined")
             }
         }
         .filter(_.nonEmpty)
@@ -187,7 +163,7 @@ object Factory {
           noSelfType,
           md.impl.body ++ List(
             q"""
-            def apply[..${typeArguments}](
+            def apply[..${cd.tparams}](
               ..$arguments
             ): ${md.name.toTypeName}[..${typeParams}] = { ..${impl} }
             """
@@ -218,5 +194,19 @@ object Factory {
     }
 
     c.Expr[Any](Block(outputs, Literal(Constant(()))))
+  }
+
+  // Workaround for Scala 2.12, which does not have Seq.distinctBy
+  private def distinctBy[A, B](source: Seq[A])(op: A => B): Seq[A] = {
+    val seen = scala.collection.mutable.HashSet.empty[B]
+    source.flatMap { a =>
+      val b = op(a)
+      if (seen.contains(b)) {
+        None
+      } else {
+        seen.add(b)
+        Some(a)
+      }
+    }
   }
 }

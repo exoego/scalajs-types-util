@@ -39,6 +39,10 @@ class FactoryTest extends AnyFlatSpec with Matchers {
     """@Factory trait X extends Seq[Int]""" shouldNot compile
   }
 
+  it should "support referencing nested trait/classes" in {
+    """val o: GenericTrait[String, Int] = GenericTrait[String, Int](a = "yay", b = 42)""" should compile
+  }
+
   it should "support generic types" in {
     """val o: GenericTrait[String, Int] = GenericTrait[String, Int](a = "yay", b = 42)""" should compile
   }
@@ -82,14 +86,16 @@ class FactoryTest extends AnyFlatSpec with Matchers {
   }
 
   it should "be added to the companion object with nested member" in {
-    """ val a: Nested = Nested(name = "yay", foo = 42)
+    """ val a: Nested = Nested(name = "yay", foo = 42, x = ???, y = new Nested.Y)
       | """.stripMargin should compile
   }
 
-  it should "have inherited members as parameter" in {
+  it should "have own members as parameter" in {
     """ val a: Inherited = Inherited(own = 42)
       | """.stripMargin shouldNot compile
+  }
 
+  it should "have inherited members as parameter" in {
     """ val a: Inherited = Inherited(name= "yay", own = 42, type_ = "wow")
       | val x: String = a.name
       | val y: Int = a.own
@@ -130,17 +136,23 @@ object Existing {
 trait Hoge extends js.Object {
   var foo: Int = js.native
 }
+
 @Factory
 @js.native
-trait Nested extends Hoge {
+trait Nested extends js.Object {
+  var foo: Int       = js.native
   var name: Nested.Z = js.native
+  var x: Nested.X    = js.native
+  var y: Nested.Y    = js.native
 }
 object Nested {
   type Z = String
+  trait X extends js.Object
+  class Y extends js.Object
 }
 
 @Factory
-trait Inherited extends TargetScalaNative {
+trait Inherited extends js.Object with TargetScalaNative {
   var own: Int
   @JSName("type") var type_ : String
   @JSName("NAMED") var named: js.UndefOr[String] = js.undefined
