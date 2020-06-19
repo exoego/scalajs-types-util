@@ -108,10 +108,10 @@ object Factory {
           case None                                  => s.name.toTermName.toString
         }
       }
+
       val members: Seq[(Boolean, ValDef)] = {
         val ownValues = cd.impl.body.collect { case x: ValDef => x }
-        (ownValues ++ inheritedMembers)
-          .distinctBy(_.name)
+        distinctBy(ownValues ++ inheritedMembers)(_.name)
           .map { tree =>
             val tpes      = tree.tpt.toString()
             val isDefined = !(tpes.startsWith("js.UndefOr") || tpes.startsWith("scala.scalajs.js.UndefOr"))
@@ -194,5 +194,19 @@ object Factory {
     }
 
     c.Expr[Any](Block(outputs, Literal(Constant(()))))
+  }
+
+  // Workaround for Scala 2.12, which does not have Seq.distinctBy
+  private def distinctBy[A, B](source: Seq[A])(op: A => B): Seq[A] = {
+    val seen = scala.collection.mutable.HashSet.empty[B]
+    source.flatMap { a =>
+      val b = op(a)
+      if (seen.contains(b)) {
+        None
+      } else {
+        seen.add(b)
+        Some(a)
+      }
+    }
   }
 }
