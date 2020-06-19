@@ -50,7 +50,8 @@ import scala.scalajs.js
   * }}}
   */
 @compileTimeOnly("Enable macro to expand this macro annotation")
-class Factory extends StaticAnnotation {
+// FIXME: constructor should be typed. Ee.g. (isTopLevel: Boolean)
+class Factory(settings: Any*) extends StaticAnnotation {
   def macroTransform(annottees: Any*): Any = macro Factory.impl
 }
 
@@ -63,13 +64,22 @@ object Factory {
     annotteeShouldBeTrait(c)(annottees)
 
     def addFactoryMethod(cd: ClassDef, md: ModuleDef, isJsNative: Boolean): ModuleDef = {
+      val isTopLevel: Boolean = c.prefix.tree match {
+        case q"new Factory($b)" => c.eval[Boolean](c.Expr(b))
+        case q"new Factory()"   => true
+        case q"new Factory"     => true
+        case _                  => bail("unexpected annotation pattern!")
+      }
       val classType: Option[c.universe.Type] =
         try {
-          Option(c.typecheck(cd).symbol.asClass.toType).filter(_ != NoType)
+          Option(
+            c.typecheck(cd, silent = true, mode = if (isTopLevel) c.TERMmode else c.TYPEmode).symbol.asClass.toType
+          )
+            .filter(_ != NoType)
         } catch {
-          case e: AssertionError =>
+          case _: Throwable =>
             warning(
-              s"@Factory macro failed to type check the trait `${cd.name}` so inherited members are not added to factory method. Reason: ${e.getMessage}"
+              s"@Factory macro failed to type check the trait `${cd.name}` so inherited members are not added to factory method."
             )
             None
         }
@@ -192,7 +202,6 @@ object Factory {
         cd :: addFactoryMethod(cd, moduleDef, isJsNative) :: Nil
       case _ => bail("Must annotate a trait")
     }
-
     c.Expr[Any](Block(outputs, Literal(Constant(()))))
   }
 
