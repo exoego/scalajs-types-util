@@ -107,10 +107,9 @@ object Factory {
       }
 
       val typeParams = cd.tparams.map(_.name.toTypeName)
-      val jsNameType = c.typeOf[js.annotation.JSName]
-      def symbolToJSKeyName(s: ValOrDefDef): String = {
+      def symbolToJSKeyName(s: ValDef): String = {
         val jsName = s.mods.annotations.collectFirst {
-          case t if t.tpe == jsNameType =>
+          case t if t.toString.contains("JSName(") =>
             t.children.tail.head
         }
         jsName match {
