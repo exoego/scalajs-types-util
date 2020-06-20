@@ -95,6 +95,17 @@ class FactoryTest extends AnyFlatSpec with Matchers {
       | """.stripMargin shouldNot compile
   }
 
+  it should "support @JSName" in {
+    val a: Inherited = Inherited(own = 42, type_ = "t", name = "n", named = "nd")
+    assert(a.own === 42)
+    assert(a.type_ === "t")
+    assert(a.name === "n")
+    assert(a.named === "nd")
+    assert(a.age === js.undefined)
+    assert(a.hoge === js.undefined)
+    assert(js.JSON.stringify(a) === """{"name":"n","own":42,"type":"t","NAMED":"nd"}""")
+  }
+
   it should "have inherited members as parameter" in {
     """ val a: Inherited = Inherited(name= "yay", own = 42, type_ = "wow")
       | val x: String = a.name
@@ -159,7 +170,8 @@ object Nested {
 @Factory
 trait Inherited extends js.Object with TargetScalaNative {
   var own: Int
-  @JSName("type") var type_ : String
+  @js.annotation.JSName("type")
+  var type_ : String
   @JSName("NAMED") var named: js.UndefOr[String] = js.undefined
 }
 
