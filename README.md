@@ -16,7 +16,7 @@ Scala.js types utility to facilitate common type transformations
 Add below line to your SBT project.
 
 ```sbt
-libraryDependencies += "net.exoego" %%% "scalajs-types-util" % "0.1.0"
+libraryDependencies += "net.exoego" %%% "scalajs-types-util" % "0.2.0"
 ```
 
 ```scala
@@ -31,5 +31,5 @@ trait Foo extends js.Object {
 
 val f = Foo(x = 1)
 assert(f.x === 1)
-assert(f.isEmpty)
+assert(f.y === js.undefined)
 ```
