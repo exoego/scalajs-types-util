@@ -31,5 +31,5 @@ trait Foo extends js.Object {
 
 val f = Foo(x = 1)
 assert(f.x === 1)
-assert(f.isEmpty)
+assert(f.y === js.undefined)
 ```
