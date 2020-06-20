@@ -45,6 +45,9 @@ class FactoryTest extends AnyFlatSpec with Matchers {
 
   it should "support generic types" in {
     """val o: GenericTrait[String, Int] = GenericTrait[String, Int](a = "yay", b = 42)""" should compile
+    val o: GenericTrait[String, Int] = GenericTrait(a = "yay", b = 42)
+    assert(o.a === "yay")
+    assert(o.b === 42)
   }
 
   "factory method " should "have defined parameter" in {
@@ -88,6 +91,12 @@ class FactoryTest extends AnyFlatSpec with Matchers {
   it should "be added to the companion object with nested member" in {
     """ val a: Nested = Nested(name = "yay", foo = 42, x = ???, y = new Nested.Y)
       | """.stripMargin should compile
+
+    val a: Nested = Nested(name = "yay", foo = 42, x = js.Object.apply().asInstanceOf[Nested.X], y = new Nested.Y)
+    assert(a.name === "yay")
+    assert(a.foo === 42)
+    assert(js.JSON.stringify(a.x) === "{}")
+    assert(js.JSON.stringify(a.y) === "{}")
   }
 
   it should "have own members as parameter" in {
@@ -116,6 +125,9 @@ class FactoryTest extends AnyFlatSpec with Matchers {
   it should "be added to the nested companion object" in {
     """ val a: Outer.Inner = Outer.Inner(x = "yay", y = Outer.Inner.Inner2(z = "www"))
       | """.stripMargin should compile
+    val a: Outer.Inner = Outer.Inner(x = "yay", y = Outer.Inner.Inner2(z = "www"))
+    assert(a.x === "yay")
+    assert(a.y.z === "www")
   }
 }
 
