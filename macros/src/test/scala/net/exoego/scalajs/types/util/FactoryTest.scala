@@ -129,6 +129,14 @@ class FactoryTest extends AnyFlatSpec with Matchers {
     assert(a.x === "yay")
     assert(a.y.z === "www")
   }
+
+  it should "have name with backtick" in {
+    val o = EventBridgeEvent[String](source = "s", `detailtype` = "x", `detail-type` = "y")
+    assert(o.source === "s")
+    assert(o.`detailtype` === "x")
+    assert(o.`detail-type` === "y")
+    assert(js.JSON.stringify(o) === """{"detail-type":"y","detailtype":"x","source":"s"}""")
+  }
 }
 
 @Factory
@@ -206,4 +214,11 @@ object Outer {
       var z: String
     }
   }
+}
+
+@Factory
+trait EventBridgeEvent[TDetailType <: String] extends js.Object {
+  var source: String
+  var `detailtype`: TDetailType
+  var `detail-type`: TDetailType
 }

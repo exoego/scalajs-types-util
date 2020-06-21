@@ -114,7 +114,7 @@ object Factory {
         }
         jsName match {
           case Some(Literal(Constant(name: String))) => name
-          case None                                  => s.name.toTermName.toString
+          case None                                  => s.name.decodedName.toTermName.toString
         }
       }
 
@@ -155,13 +155,10 @@ object Factory {
       val arguments = members
         .map {
           case (isDefined, s) =>
-            val name       = TermName(s.name.decodedName.toString)
+            val name       = s.name.toTermName
             val returnType = s.tpt
-            if (isDefined) {
-              q"${name}: ${returnType}"
-            } else {
-              ValDef(Modifiers(Flag.PARAM), name, q"${returnType}", q"scala.scalajs.js.undefined")
-            }
+            val rhs        = if (isDefined) EmptyTree else q"scala.scalajs.js.undefined"
+            ValDef(Modifiers(Flag.PARAM), name, q"${returnType}", rhs)
         }
         .filter(_.nonEmpty)
       ModuleDef(
