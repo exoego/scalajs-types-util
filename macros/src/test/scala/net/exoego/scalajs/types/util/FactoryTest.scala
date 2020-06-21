@@ -31,6 +31,19 @@ class FactoryTest extends AnyFlatSpec with Matchers {
     """@Factory trait X extends js.Object""" should compile
     """@Factory trait X extends js.Object {}""" should compile
     """@Factory trait X extends scala.scalajs.js.Object {}""" should compile
+    """@Factory trait X extends Existing""" should compile
+    """object X2 {
+      |  @Factory(false) trait Y2 extends js.Object
+      |}""".stripMargin should compile
+  }
+
+  it should "compile when applied to a trait inside companion object if trait explicitly extends js.Object" in {
+    """object X {
+      |  @Factory(false) trait Y extends Existing
+      |}""".stripMargin shouldNot compile
+    """object X {
+      |  @Factory(false) trait Y extends js.Object with Existing
+      |}""".stripMargin should compile
   }
 
   it should "not compile when applied to a Scala-native trait not extending js.Object" in {

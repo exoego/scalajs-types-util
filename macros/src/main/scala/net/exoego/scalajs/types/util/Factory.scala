@@ -83,9 +83,12 @@ object Factory {
             )
             None
         }
-      if (!cd.impl.parents.map(_.toString).exists(_.endsWith("js.Object"))) {
+      val notExtendingJsObject = !classType.exists(_.baseClasses.exists(_ == c.symbolOf[js.Object])) && !cd.impl.parents
+        .map(_.toString)
+        .exists(_.endsWith("js.Object"))
+      if (notExtendingJsObject) {
         bail(
-          "Trait must explicitly extends scala.scalajs.js.Object, or js.Object in short form. E.g. trait X extends js.Object with Y"
+          "Trait must extends scala.scalajs.js.Object. It is required to explicitly extends (trait X extends js.Object with Y) if inside companion object"
         )
       }
       val inheritedMembers: Seq[ValDef] = classType match {
