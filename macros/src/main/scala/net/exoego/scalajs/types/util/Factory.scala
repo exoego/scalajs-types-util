@@ -78,7 +78,7 @@ object Factory {
             .filter(_ != NoType)
         } catch {
           case _: Throwable =>
-            warning(
+            info(
               s"@Factory macro failed to type check the trait `${cd.name}` so inherited members are not added to factory method."
             )
             None

@@ -5,6 +5,9 @@ import scala.scalajs.js
 
 private[util] object Helper {
   private final val libraryNamePrefix: String = "[scalajs-types-util]"
+  def info(message: String)(implicit c: blackbox.Context): Unit = {
+    c.info(c.enclosingPosition, s"${libraryNamePrefix} ${message}", force = false)
+  }
   def warning(message: String)(implicit c: blackbox.Context): Unit = {
     c.warning(c.enclosingPosition, s"${libraryNamePrefix} ${message}")
   }
