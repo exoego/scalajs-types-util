@@ -63,6 +63,16 @@ class FactoryTest extends AnyFlatSpec with Matchers {
     assert(o.b === 42)
   }
 
+  it should "not required explicit extending js.Object if top-level" in {
+    """@Factory trait Inherited extends js.Object with TargetScalaNative""" should compile
+    """@Factory trait Inherited extends TargetScalaNative""" should compile
+  }
+
+  it should "require explicit extending js.Object if not top-level" in {
+    """object X { @Factory(false) trait Inherited extends TargetScalaNative }""" shouldNot compile
+    """object X { @Factory(false) trait Inherited extends js.Object with TargetScalaNative }""" should compile
+  }
+
   "factory method " should "have defined parameter" in {
     """ val a: Target = Target(name = "yay")
       | """.stripMargin should compile
