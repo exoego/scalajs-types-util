@@ -1,18 +1,18 @@
 package net.exoego.scalajs.types.util
 
-import scala.reflect.macros.blackbox
+import scala.reflect.macros.whitebox
 import scala.scalajs.js
 
 private[util] object Helper {
   private final val libraryNamePrefix: String = "[scalajs-types-util]"
-  def warning(message: String)(implicit c: blackbox.Context): Unit = {
+  def warning(message: String)(implicit c: whitebox.Context): Unit = {
     c.warning(c.enclosingPosition, s"${libraryNamePrefix} ${message}")
   }
-  def bail(message: String)(implicit c: blackbox.Context): Nothing = {
+  def bail(message: String)(implicit c: whitebox.Context): Nothing = {
     c.abort(c.enclosingPosition, s"${libraryNamePrefix} ${message}")
   }
 
-  def annotteeShouldBeTrait(c: blackbox.Context)(annottees: Seq[c.Expr[Any]]): Unit = {
+  def annotteeShouldBeTrait(c: whitebox.Context)(annottees: Seq[c.Expr[Any]]): Unit = {
     import c.universe._
     annottees match {
       case List(Expr(ClassDef(mods, _, _, _))) if mods.hasFlag(Flag.TRAIT) =>
@@ -23,7 +23,7 @@ private[util] object Helper {
     }
   }
 
-  def getInheritedMembers(c: blackbox.Context)(argumentType: c.universe.Type): List[c.universe.Symbol] = {
+  def getInheritedMembers(c: whitebox.Context)(argumentType: c.universe.Type): List[c.universe.Symbol] = {
     import c.universe._
     // maybe decls instead of members?
     (argumentType.members.toSet -- c.typeOf[js.Object].members.toSet).toList
@@ -31,7 +31,7 @@ private[util] object Helper {
       .sortBy(_.name.decodedName.toString)
   }
 
-  def getArgumentType[T]()(implicit c: blackbox.Context): T = {
+  def getArgumentType[T]()(implicit c: whitebox.Context): T = {
     import c.universe._
     val argumentType: c.universe.Type = {
       val macroTypeWithArguments          = c.typecheck(q"${c.prefix.tree}").tpe
@@ -48,7 +48,7 @@ private[util] object Helper {
     argumentType.asInstanceOf[T]
   }
 
-  def isScalaJsNative(c: blackbox.Context)(mods: c.universe.Modifiers): Boolean = {
+  def isScalaJsNative(c: whitebox.Context)(mods: c.universe.Modifiers): Boolean = {
     import c.universe._
     mods.annotations.exists {
       case q"new scala.scalajs.js.native()" => true
@@ -58,7 +58,7 @@ private[util] object Helper {
     }
   }
 
-  def nativeIfNeeded(c: blackbox.Context)(tree: c.universe.Tree, isJsNative: Boolean): c.universe.Tree = {
+  def nativeIfNeeded(c: whitebox.Context)(tree: c.universe.Tree, isJsNative: Boolean): c.universe.Tree = {
     import c.universe._
     if (isJsNative) {
       tree match {
