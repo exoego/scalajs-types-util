@@ -2,7 +2,7 @@ package net.exoego.scalajs.types.util
 
 import scala.annotation.{StaticAnnotation, compileTimeOnly}
 import scala.language.experimental.macros
-import scala.reflect.macros.blackbox
+import scala.reflect.macros.whitebox
 import scala.scalajs.js
 
 /**
@@ -56,10 +56,10 @@ class Factory(settings: Any*) extends StaticAnnotation {
 }
 
 object Factory {
-  def impl(c: blackbox.Context)(annottees: c.Expr[Any]*) = {
+  def impl(c: whitebox.Context)(annottees: c.Expr[Any]*) = {
     import c.universe._
     import Helper._
-    implicit val context: blackbox.Context = c
+    implicit val context: whitebox.Context = c
 
     annotteeShouldBeTrait(c)(annottees)
 
