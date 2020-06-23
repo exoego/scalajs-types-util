@@ -73,6 +73,12 @@ class FactoryTest extends AnyFlatSpec with Matchers {
     """object X { @Factory(false) trait Inherited extends js.Object with TargetScalaNative }""" should compile
   }
 
+  it should "supports trait/object whose name contains backtick" in {
+    val o: `CodePipeline.job` = `CodePipeline.job`(id = "i", data = "d")
+    assert(o.id === "i")
+    assert(o.data === "d")
+  }
+
   "factory method " should "have defined parameter" in {
     """ val a: Target = Target(name = "yay")
       | """.stripMargin should compile
@@ -244,4 +250,14 @@ trait EventBridgeEvent[TDetailType <: String] extends js.Object {
   var source: String
   var `detailtype`: TDetailType
   var `detail-type`: TDetailType
+}
+
+@Factory
+@js.native
+trait `CodePipeline.job` extends js.Object {
+  var id: String                    = js.native
+  var data: `CodePipeline.job`.Data = js.native
+}
+object `CodePipeline.job` {
+  type Data = String
 }
