@@ -2,7 +2,7 @@ package net.exoego.scalajs.types.util
 
 import scala.annotation.{StaticAnnotation, compileTimeOnly}
 import scala.language.experimental.macros
-import scala.reflect.macros.blackbox
+import scala.reflect.macros.whitebox
 import scala.scalajs.js
 
 /**
@@ -48,7 +48,7 @@ class Partial[T <: js.Object] extends StaticAnnotation {
 }
 
 object Partial {
-  def impl(c: blackbox.Context)(annottees: c.Expr[Any]*) = {
+  def impl(c: whitebox.Context)(annottees: c.Expr[Any]*) = {
     import c.universe._
     import Helper._
     implicit val context = c
