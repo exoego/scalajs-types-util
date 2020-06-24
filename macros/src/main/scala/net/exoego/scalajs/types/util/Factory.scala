@@ -48,14 +48,24 @@ import scala.scalajs.js
   *   override var name = "omg"
   * }
   * }}}
+  *
+  * Known limitation: If used inside object, `isTopLevel` argument must be `false`.
+  *
+  * {{{
+  * object Outer {
+  *   @Factory(isTopLevel = false)
+  *   trait Base extends js.Object {
+  *     var foo: String
+  *   }
+  * }
+  * }}}
   */
 @compileTimeOnly("Enable macro to expand this macro annotation")
-// FIXME: constructor should be typed. Ee.g. (isTopLevel: Boolean)
-class Factory(settings: Any*) extends StaticAnnotation {
-  def macroTransform(annottees: Any*): Any = macro Factory.impl
+class Factory(isTopLevel: Boolean = true) extends StaticAnnotation {
+  def macroTransform(annottees: Any*): Any = macro FactoryImpl.impl
 }
 
-object Factory {
+private[util] object FactoryImpl {
   def impl(c: whitebox.Context)(annottees: c.Expr[Any]*) = {
     import c.universe._
     import Helper._
@@ -67,7 +77,6 @@ object Factory {
       val isTopLevel: Boolean = c.prefix.tree match {
         case q"new Factory($b)" => c.eval[Boolean](c.Expr(b))
         case q"new Factory()"   => true
-        case q"new Factory"     => true
         case _                  => bail("unexpected annotation pattern!")
       }
       val classType: Option[c.universe.Type] =
