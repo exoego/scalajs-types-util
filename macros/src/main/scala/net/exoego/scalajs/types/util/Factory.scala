@@ -31,6 +31,7 @@ import scala.scalajs.js
   * }
   *
   * object Base {
+  *   @inline
   *   def apply(
   *     foo: String,
   *     bar: js.UndefOr[js.Array[Int]] = js.undefined,
@@ -59,9 +60,22 @@ import scala.scalajs.js
   *   }
   * }
   * }}}
+  *
+  * By default, factory methods will be inlined (marked with `@inline` annotation), so companion object may be
+  * completely removed in fullOptStage
+  * You may avoid inlinining by setting `inline` parameter to `false`.
+  *
+  * {{{
+  * object Outer {
+  *   @Factory(inline = false)
+  *   trait Base extends js.Object {
+  *     var foo: String
+  *   }
+  * }
+  * }}}
   */
-@compileTimeOnly("Enable macro to expand this macro annotation")
-class Factory(isTopLevel: Boolean = true) extends StaticAnnotation {
+@compileTimeOnly("Enable macro to expad this macro annotation")
+class Factory(isTopLevel: Boolean = true, inline: Boolean = true) extends StaticAnnotation {
   def macroTransform(annottees: Any*): Any = macro FactoryImpl.impl
 }
 
@@ -74,10 +88,12 @@ private[util] object FactoryImpl {
     annotteeShouldBeTrait(c)(annottees)
 
     def addFactoryMethod(cd: ClassDef, md: ModuleDef, isJsNative: Boolean): ModuleDef = {
-      val isTopLevel: Boolean = c.prefix.tree match {
-        case q"new Factory($b)" => c.eval[Boolean](c.Expr(b))
-        case q"new Factory()"   => true
-        case _                  => bail("unexpected annotation pattern!")
+      val (isTopLevel: Boolean, addInline: Boolean) = c.prefix.tree match {
+        case q"new Factory($isToplLevel, $inline)" =>
+          (c.eval[Boolean](c.Expr(isToplLevel)), c.eval[Boolean](c.Expr(inline)))
+        case q"new Factory($isToplLevel)" => (c.eval[Boolean](c.Expr(isToplLevel)), true)
+        case q"new Factory()"             => (true, true)
+        case _                            => bail("unexpected annotation pattern!")
       }
       val classType: Option[c.universe.Type] =
         try {
@@ -173,19 +189,27 @@ private[util] object FactoryImpl {
             ValDef(Modifiers(Flag.PARAM), name, q"${returnType}", rhs)
         }
         .filter(_.nonEmpty)
+      val factoryMethod = if (addInline) {
+        q"""
+        @inline
+        def apply[..${cd.tparams}](
+          ..$arguments
+        ): ${md.name.toTypeName}[..${typeParams}] = { ..${impl} }
+        """
+      } else {
+        q"""
+        def apply[..${cd.tparams}](
+          ..$arguments
+        ): ${md.name.toTypeName}[..${typeParams}] = { ..${impl} }
+        """
+      }
       ModuleDef(
         md.mods,
         md.name,
         Template(
           md.impl.parents,
           noSelfType,
-          md.impl.body ++ List(
-            q"""
-            def apply[..${cd.tparams}](
-              ..$arguments
-            ): ${md.name.toTypeName}[..${typeParams}] = { ..${impl} }
-            """
-          )
+          md.impl.body ++ List(factoryMethod)
         )
       )
     }
