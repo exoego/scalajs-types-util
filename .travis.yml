@@ -3,7 +3,7 @@ script:
   - sbt ++$TRAVIS_SCALA_VERSION test
 scala:
   - 2.12.11
-  - 2.13.2
+  - 2.13.3
 jdk:
   - openjdk11
 env:
@@ -12,7 +12,7 @@ env:
 
 matrix:
   include:
-    - scala: 2.13.2
+    - scala: 2.13.3
       jdk: openjdk11
       env: SCALAJS_VERSION= JOB_NAME="format and doc"
       script: sbt ++$TRAVIS_SCALA_VERSION scalafmtCheckAll scalafmtSbtCheck
