@@ -21,7 +21,7 @@ libraryDependencies += "net.exoego" %%% "scalajs-types-util" % "0.3.0"
 
 ### Factory macro
 
-`@Factory` macro creates a highly-optimized factory method for JS trait, just like noral case classes.
+`@Factory` macro creates a highly-optimized factory method for JS trait, just like normal case classes.
 Each factory methods are added to a corresponding companion object (if not exist, created automatically).
 
 JS trait is generally lighter and faster than JS class, since plain old JS object can be trait, but class need extra overheads.
