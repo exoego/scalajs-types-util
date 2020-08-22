@@ -40,7 +40,7 @@ lazy val macros = project
       val isSjs06 = Option(System.getenv("SCALAJS_VERSION")).filter(_.nonEmpty).exists(_.startsWith("0.6."))
       Seq(
         "org.scalameta" %%% "scalameta" % (if (isSjs06) "4.3.10" else "4.3.20"),
-        "org.scalatest" %%% "scalatest" % "3.2.1" % Test
+        "org.scalatest" %%% "scalatest" % "3.2.2" % Test
       )
     },
     licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
