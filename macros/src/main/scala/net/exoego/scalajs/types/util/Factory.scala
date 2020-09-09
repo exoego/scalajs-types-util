@@ -159,18 +159,16 @@ private[util] object FactoryImpl {
 
       val impl = {
         val groupedByDefined = members.groupBy(_._1)
-        val requiredArgs: Seq[c.universe.Apply] = groupedByDefined.getOrElse(true, Seq.empty).map {
-          case (_, s) =>
-            val memberName = s.name.toTermName
-            val jsKeyName  = symbolToJSKeyName(s)
-            q"${jsKeyName} -> $memberName.asInstanceOf[scala.scalajs.js.Any]".asInstanceOf[Apply]
+        val requiredArgs: Seq[c.universe.Apply] = groupedByDefined.getOrElse(true, Seq.empty).map { case (_, s) =>
+          val memberName = s.name.toTermName
+          val jsKeyName  = symbolToJSKeyName(s)
+          q"${jsKeyName} -> $memberName.asInstanceOf[scala.scalajs.js.Any]".asInstanceOf[Apply]
         }
-        val optionalArgs = groupedByDefined.getOrElse(false, Seq.empty).map {
-          case (_, s) =>
-            val memberName = s.name.toTermName
-            val jsKeyName  = symbolToJSKeyName(s)
-            q"$memberName.foreach(v$$ => obj$$.updateDynamic(${jsKeyName})(v$$.asInstanceOf[js.Any])) "
-              .asInstanceOf[Apply]
+        val optionalArgs = groupedByDefined.getOrElse(false, Seq.empty).map { case (_, s) =>
+          val memberName = s.name.toTermName
+          val jsKeyName  = symbolToJSKeyName(s)
+          q"$memberName.foreach(v$$ => obj$$.updateDynamic(${jsKeyName})(v$$.asInstanceOf[js.Any])) "
+            .asInstanceOf[Apply]
         }
         q"""
            val obj$$ = scala.scalajs.js.Dynamic.literal(
@@ -181,12 +179,11 @@ private[util] object FactoryImpl {
          """
       }
       val arguments = members
-        .map {
-          case (isDefined, s) =>
-            val name       = s.name.toTermName
-            val returnType = s.tpt
-            val rhs        = if (isDefined) EmptyTree else q"scala.scalajs.js.undefined"
-            ValDef(Modifiers(Flag.PARAM), name, q"${returnType}", rhs)
+        .map { case (isDefined, s) =>
+          val name       = s.name.toTermName
+          val returnType = s.tpt
+          val rhs        = if (isDefined) EmptyTree else q"scala.scalajs.js.undefined"
+          ValDef(Modifiers(Flag.PARAM), name, q"${returnType}", rhs)
         }
         .filter(_.nonEmpty)
       val factoryMethod = if (addInline) {
