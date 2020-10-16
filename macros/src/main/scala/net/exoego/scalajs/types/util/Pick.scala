@@ -5,8 +5,7 @@ import scala.language.experimental.macros
 import scala.reflect.macros.whitebox
 import scala.scalajs.js
 
-/**
-  * Enrich the annotated type with only picked members of `T`.
+/** Enrich the annotated type with only picked members of `T`.
   *
   * If the below code given,
   *

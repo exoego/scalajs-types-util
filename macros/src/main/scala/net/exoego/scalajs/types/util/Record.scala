@@ -5,8 +5,7 @@ import scala.language.experimental.macros
 import scala.reflect.macros.whitebox
 import scala.scalajs.js
 
-/**
-  * Enrich the annotated type with a set of speified properties whose type is  `T`.
+/** Enrich the annotated type with a set of speified properties whose type is  `T`.
   *
   * If the below code given,
   *
