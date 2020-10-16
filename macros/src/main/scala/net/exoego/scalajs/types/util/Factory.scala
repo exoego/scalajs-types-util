@@ -5,8 +5,7 @@ import scala.language.experimental.macros
 import scala.reflect.macros.whitebox
 import scala.scalajs.js
 
-/**
-  * Generate a case-class-like companion object with factory method, or add such method to the existing companion object.
+/** Generate a case-class-like companion object with factory method, or add such method to the existing companion object.
   * This might be helpful if you want to instantiate JS traits, especially it is a native (since a Scala.js-defined
   * JS class cannot directly extend it).
   *

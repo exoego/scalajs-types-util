@@ -5,8 +5,7 @@ import scala.language.experimental.macros
 import scala.reflect.macros.whitebox
 import scala.scalajs.js
 
-/**
-  * Enrich the annotated type with all properties of `T` set to readonly (`def field: String` in Scala).
+/** Enrich the annotated type with all properties of `T` set to readonly (`def field: String` in Scala).
   * Methods are also added to the annotated type.
   *
   * If the below code given,

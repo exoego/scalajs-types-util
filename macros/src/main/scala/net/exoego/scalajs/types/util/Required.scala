@@ -6,8 +6,7 @@ import scala.reflect.macros.whitebox
 import scala.scalajs.js
 import scala.scalajs.js.UndefOr
 
-/**
-  * Enrich the annotated type with all properties of `T` set to mandatory (unwrapped with `js.UndefOr`).
+/** Enrich the annotated type with all properties of `T` set to mandatory (unwrapped with `js.UndefOr`).
   * Methods ('def`) are also added to the annotated type, but the return type is not modified.
   *
   * If the below code given,

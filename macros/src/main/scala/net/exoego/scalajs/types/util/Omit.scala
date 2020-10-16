@@ -5,8 +5,7 @@ import scala.language.experimental.macros
 import scala.reflect.macros.whitebox
 import scala.scalajs.js
 
-/**
-  * Enrich the annotated type with all members of `T` except the omitted members .
+/** Enrich the annotated type with all members of `T` except the omitted members .
   *
   * If the below code given,
   *
