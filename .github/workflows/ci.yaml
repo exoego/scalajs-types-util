@@ -6,8 +6,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scala: [2.13.4, 2.12.12]
-        nodejs: [14.15.1]
+        scala: [2.13.4, 2.12.13]
+        nodejs: [14.15.4]
     steps:
       - uses: actions/checkout@v2
       - uses: olafurpg/setup-scala@v10

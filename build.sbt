@@ -3,11 +3,10 @@ import sbt.Keys._
 
 organization in ThisBuild := "net.exoego"
 name in ThisBuild := "scalajs-types-util"
-crossScalaVersions in ThisBuild := Seq("2.13.4", "2.12.12")
+crossScalaVersions in ThisBuild := Seq("2.13.4", "2.12.13")
 
 lazy val compilerSettings: Seq[Def.Setting[_]] = Seq(
-  scalacOptions ++= Seq("-deprecation"),
-  scalacOptions ++= Seq("-P:scalajs:sjsDefinedByDefault").filter(_ => scalaJSVersion.startsWith("0.6."))
+  scalacOptions ++= Seq("-deprecation")
 )
 
 lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(

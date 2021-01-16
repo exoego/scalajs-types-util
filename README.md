@@ -4,12 +4,12 @@ Scala.js types utility to facilitate common type transformations
 
 ## Support matrix
 
-|            |   ScalaJS 0.6.28+  |   ScalaJS 1.x      |
-| ---------- | :----------------: | :----------------: |
-| Scala 2.13 | :heavy_check_mark: | :heavy_check_mark: |
-| Scala 2.12 | :heavy_check_mark: | :heavy_check_mark: |
-| Scala 2.11 |         N/A        |       N/A          |
-| Scala 2.10 |         N/A        |       N/A          |
+|            |   ScalaJS 0.6.28+                     |   ScalaJS 1.x      |
+| ---------- | :-----------------------------------: | :----------------: |
+| Scala 2.13 | :heavy_check_mark: (v0.3.0 was final) | :heavy_check_mark: |
+| Scala 2.12 | :heavy_check_mark: (v0.3.0 was final) | :heavy_check_mark: |
+| Scala 2.11 |         N/A                           |       N/A          |
+| Scala 2.10 |         N/A                           |       N/A          |
 
 ## How to use
 
