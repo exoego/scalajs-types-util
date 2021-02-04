@@ -39,7 +39,7 @@ lazy val macros = project
     libraryDependencies ++= {
       val isSjs06 = Option(System.getenv("SCALAJS_VERSION")).filter(_.nonEmpty).exists(_.startsWith("0.6."))
       Seq(
-        "org.scalameta" %%% "scalameta" % (if (isSjs06) "4.3.10" else "4.4.7"),
+        "org.scalameta" %%% "scalameta" % (if (isSjs06) "4.3.10" else "4.4.8"),
         "org.scalatest" %%% "scalatest" % "3.2.3" % Test
       )
     },
