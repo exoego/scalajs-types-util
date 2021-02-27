@@ -141,7 +141,7 @@ private[util] object FactoryImpl {
         }
         jsName match {
           case Some(Literal(Constant(name: String))) => name
-          case None                                  => s.name.decodedName.toTermName.toString
+          case _                                     => s.name.decodedName.toTermName.toString
         }
       }
 
