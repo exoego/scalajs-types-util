@@ -1,9 +1,13 @@
 import sbt._
 import sbt.Keys._
 
+val scala212Version = "2.12.13"
+val scala213Version = "2.13.5"
+
 organization in ThisBuild := "net.exoego"
 name in ThisBuild := "scalajs-types-util"
-crossScalaVersions in ThisBuild := Seq("2.13.4", "2.13.5")
+scalaVersion in ThisBuild := scala213Version
+crossScalaVersions in ThisBuild := Seq(scala212Version, scala213Version)
 
 lazy val compilerSettings: Seq[Def.Setting[_]] = Seq(
   scalacOptions ++= Seq("-deprecation")
