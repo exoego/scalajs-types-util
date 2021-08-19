@@ -4,9 +4,9 @@ import sbt.Keys._
 val scala212Version = "2.12.14"
 val scala213Version = "2.13.6"
 
-organization in ThisBuild := "net.exoego"
-name in ThisBuild := "scalajs-types-util"
-scalaVersion in ThisBuild := scala213Version
+organization in ThisBuild       := "net.exoego"
+name in ThisBuild               := "scalajs-types-util"
+scalaVersion in ThisBuild       := scala213Version
 crossScalaVersions in ThisBuild := Seq(scala212Version, scala213Version)
 
 lazy val compilerSettings: Seq[Def.Setting[_]] = Seq(
@@ -23,7 +23,7 @@ lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
   libraryDependencies ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, n)) if n >= 13 => Nil
-      case _                       => compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full) :: Nil
+      case _ => compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full) :: Nil
     }
   }
 )
@@ -63,11 +63,11 @@ lazy val macros = project
         url = url("https://www.exoego.net")
       )
     ),
-    publishMavenStyle := true,
-    publishArtifact in Test := false,
+    publishMavenStyle                        := true,
+    publishArtifact in Test                  := false,
     publishArtifact in (Compile, packageDoc) := true,
     publishArtifact in (Compile, packageSrc) := true,
-    publishArtifact in packageDoc := true,
+    publishArtifact in packageDoc            := true,
     pomIncludeRepository := { _ =>
       false
     },
@@ -77,7 +77,7 @@ lazy val macros = project
       else
         Opts.resolver.sonatypeStaging
     ),
-    publishConfiguration := publishConfiguration.value.withOverwrite(false),
+    publishConfiguration      := publishConfiguration.value.withOverwrite(false),
     publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
   )
   .enablePlugins(ScalaJSPlugin)
