@@ -5,7 +5,7 @@ import scala.language.experimental.macros
 import scala.reflect.macros.whitebox
 import scala.scalajs.js
 
-/** Enrich the annotated type with a set of speified properties whose type is  `T`.
+/** Enrich the annotated type with a set of speified properties whose type is `T`.
   *
   * If the below code given,
   *
@@ -50,7 +50,7 @@ object Record {
 
     val specifiedFieldNames: Set[String] = c.prefix.tree match {
       case q"new Record[$a](..$b)" => b.map(_.toString.drop(1).dropRight(1)).toSet
-      case _                       => bail("""@Record requires a type argument T and at-least one field names to be picked from T.""")
+      case _ => bail("""@Record requires a type argument T and at-least one field names to be picked from T.""")
     }
     val argumentType = getArgumentType[Type]()
     annotteeShouldBeTrait(c)(annottees)
