@@ -2,7 +2,7 @@ import sbt._
 import sbt.Keys._
 
 val scala212Version = "2.12.15"
-val scala213Version = "2.13.6"
+val scala213Version = "2.13.7"
 
 organization in ThisBuild       := "net.exoego"
 name in ThisBuild               := "scalajs-types-util"
