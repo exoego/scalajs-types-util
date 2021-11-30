@@ -4,10 +4,9 @@ import sbt.Keys._
 val scala212Version = "2.12.15"
 val scala213Version = "2.13.7"
 
-organization in ThisBuild       := "net.exoego"
-name in ThisBuild               := "scalajs-types-util"
-scalaVersion in ThisBuild       := scala213Version
-crossScalaVersions in ThisBuild := Seq(scala212Version, scala213Version)
+ThisBuild / organization       := "net.exoego"
+ThisBuild / scalaVersion       := scala213Version
+ThisBuild / crossScalaVersions := Seq(scala212Version, scala213Version)
 
 lazy val compilerSettings: Seq[Def.Setting[_]] = Seq(
   scalacOptions ++= Seq("-deprecation")
@@ -63,11 +62,10 @@ lazy val macros = project
         url = url("https://www.exoego.net")
       )
     ),
-    publishMavenStyle                        := true,
-    publishArtifact in Test                  := false,
-    publishArtifact in (Compile, packageDoc) := true,
-    publishArtifact in (Compile, packageSrc) := true,
-    publishArtifact in packageDoc            := true,
+    publishMavenStyle            := true,
+    Test / publishArtifact       := false,
+    packageSrc / publishArtifact := true,
+    packageDoc / publishArtifact := true,
     pomIncludeRepository := { _ =>
       false
     },
