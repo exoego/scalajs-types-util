@@ -2,7 +2,7 @@ import sbt._
 import sbt.Keys._
 
 val scala212Version = "2.12.16"
-val scala213Version = "2.13.8"
+val scala213Version = "2.13.10"
 
 ThisBuild / organization       := "net.exoego"
 ThisBuild / scalaVersion       := scala213Version
@@ -43,7 +43,7 @@ lazy val macros = project
       val isSjs06 = Option(System.getenv("SCALAJS_VERSION")).filter(_.nonEmpty).exists(_.startsWith("0.6."))
       Seq(
         "org.scalameta" %%% "scalameta" % (if (isSjs06) "4.3.10" else "4.5.12"),
-        "org.scalatest" %%% "scalatest" % "3.2.13" % Test
+        "org.scalatest" %%% "scalatest" % "3.2.14" % Test
       )
     },
     licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
