@@ -2,7 +2,7 @@ import sbt._
 import sbt.Keys._
 
 val scala212Version = "2.12.19"
-val scala213Version = "2.13.13"
+val scala213Version = "2.13.14"
 
 ThisBuild / organization       := "net.exoego"
 ThisBuild / scalaVersion       := scala213Version
